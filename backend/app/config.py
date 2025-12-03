@@ -1,9 +1,11 @@
 import os
 import base64
 import json
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding='utf-8', extra='ignore')
+
     # Supabase
     SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
     SUPABASE_SERVICE_KEY: str = os.getenv("SUPABASE_SERVICE_KEY", "")
