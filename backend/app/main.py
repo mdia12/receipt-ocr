@@ -11,7 +11,7 @@ from .routers import upload, status, receipts
 
 # --- Google Cloud Credentials Setup for Render ---
 # Decode the Base64 encoded key from environment variable and write to a temp file
-encoded_key = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_BASE64")
+encoded_key = settings.GOOGLE_APPLICATION_CREDENTIALS_BASE64
 if encoded_key:
     try:
         decoded_key = base64.b64decode(encoded_key).decode("utf-8")

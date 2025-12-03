@@ -15,7 +15,7 @@ This is the FastAPI backend for the Receipt OCR SaaS. It handles file uploads, O
 
     *   `SUPABASE_URL`: Your Supabase Project URL.
     *   `SUPABASE_SERVICE_KEY`: Your Supabase Service Role Key (secret).
-    *   `GCP_SERVICE_ACCOUNT_JSON_BASE64`: Base64 encoded content of your Google Cloud Service Account JSON key.
+    *   `GOOGLE_APPLICATION_CREDENTIALS_BASE64`: Base64 encoded content of your Google Cloud Service Account JSON key.
     *   `BUCKET_RAW`: `receipts_raw` (Create this bucket in Supabase)
     *   `BUCKET_PDF`: `receipts_pdf` (Create this bucket in Supabase)
     *   `BUCKET_EXCEL`: `receipts_excel` (Create this bucket in Supabase)
