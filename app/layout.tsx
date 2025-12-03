@@ -7,7 +7,7 @@ import { LayoutDashboard, LogIn, LogOut } from "lucide-react";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Receipt OCR",
+  title: "NovaReceipt",
   description: "Turn your messy receipts into clean accounting data.",
 };
 
@@ -23,10 +23,10 @@ export default function RootLayout({
         <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight text-slate-900 hover:opacity-90 transition-opacity">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-mono text-sm">
-                R
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-violet-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
+                N
               </div>
-              Receipt OCR
+              NovaReceipt
             </Link>
             
             <nav className="flex items-center gap-6 text-sm font-medium text-slate-600">
@@ -57,7 +57,7 @@ export default function RootLayout({
         {/* Footer */}
         <footer className="border-t border-slate-200 py-8 mt-auto">
           <div className="max-w-5xl mx-auto px-4 text-center text-slate-500 text-sm">
-            <p>&copy; {new Date().getFullYear()} Receipt OCR. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} NovaReceipt. All rights reserved.</p>
           </div>
         </footer>
       </body>

@@ -44,7 +44,7 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh]">
       <div className="w-full max-w-md p-8 bg-slate-900 rounded-xl border border-slate-800 shadow-lg">
-        <h2 className="text-2xl font-bold text-white mb-6 text-center">Sign in to Receipt OCR</h2>
+        <h2 className="text-2xl font-bold text-white mb-6 text-center">Sign in to NovaReceipt</h2>
         
         {error && (
           <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 text-red-400 rounded text-sm">
