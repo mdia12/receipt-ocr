@@ -99,8 +99,8 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
             relative border-2 border-dashed rounded-xl p-8 transition-all cursor-pointer
             flex flex-col items-center justify-center text-center space-y-4
             ${isDragging 
-              ? "border-blue-500 bg-blue-500/10" 
-              : "border-slate-700 bg-slate-900/50 hover:border-slate-600 hover:bg-slate-900"
+              ? "border-blue-500 bg-blue-50" 
+              : "border-slate-300 bg-slate-50 hover:border-slate-400 hover:bg-slate-100"
             }
           `}
         >
@@ -111,11 +111,11 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
             className="hidden"
             accept=".jpg,.jpeg,.png,.pdf"
           />
-          <div className={`p-4 rounded-full ${isDragging ? "bg-blue-500/20" : "bg-slate-800"}`}>
-            <UploadCloud className={`w-8 h-8 ${isDragging ? "text-blue-400" : "text-slate-400"}`} />
+          <div className={`p-4 rounded-full ${isDragging ? "bg-blue-100" : "bg-white shadow-sm border border-slate-200"}`}>
+            <UploadCloud className={`w-8 h-8 ${isDragging ? "text-blue-600" : "text-slate-400"}`} />
           </div>
           <div>
-            <p className="text-lg font-medium text-slate-200">
+            <p className="text-lg font-medium text-slate-900">
               {isDragging ? "Drop file here" : "Drag & drop receipt here"}
             </p>
             <p className="text-sm text-slate-500 mt-1">
@@ -124,20 +124,20 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
           </div>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
-                <FileIcon className="w-6 h-6 text-blue-400" />
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <FileIcon className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <p className="font-medium text-slate-200">{file.name}</p>
+                <p className="font-medium text-slate-900">{file.name}</p>
                 <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(1)} KB</p>
               </div>
             </div>
             <button 
               onClick={() => setFile(null)}
-              className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-200"
+              className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600"
               disabled={isUploading}
             >
               <X className="w-5 h-5" />
@@ -145,7 +145,7 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
               {error}
             </div>
           )}
@@ -153,7 +153,7 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
           <button
             onClick={handleUpload}
             disabled={isUploading}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             {isUploading ? (
               <>

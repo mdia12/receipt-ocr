@@ -83,11 +83,11 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-200 font-sans">
+    <div className="flex h-screen bg-white text-slate-900 font-sans">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-800 bg-slate-950 flex flex-col hidden md:flex">
-        <div className="p-6 border-b border-slate-800">
-          <div className="flex items-center gap-2 text-white font-bold text-xl">
+      <aside className="w-64 border-r border-slate-200 bg-white flex flex-col hidden md:flex">
+        <div className="p-6 border-b border-slate-200">
+          <div className="flex items-center gap-2 text-slate-900 font-bold text-xl">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <FileText className="w-5 h-5 text-white" />
             </div>
@@ -99,19 +99,19 @@ export default function DashboardPage() {
           <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
             Main
           </div>
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 bg-blue-600/10 text-blue-400 rounded-lg font-medium">
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-lg font-medium">
             <LayoutDashboard className="w-5 h-5" />
             Dashboard
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-slate-200 hover:bg-slate-900 rounded-lg transition-colors">
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
             <Wallet className="w-5 h-5" />
             Transactions
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-slate-200 hover:bg-slate-900 rounded-lg transition-colors">
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
             <PieChart className="w-5 h-5" />
             Analytics
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-slate-200 hover:bg-slate-900 rounded-lg transition-colors">
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
             <CreditCard className="w-5 h-5" />
             Cards
           </a>
@@ -119,14 +119,14 @@ export default function DashboardPage() {
           <div className="mt-8 px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
             Settings
           </div>
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-slate-200 hover:bg-slate-900 rounded-lg transition-colors">
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
             <Settings className="w-5 h-5" />
             Preferences
           </a>
         </nav>
 
-        <div className="p-4 border-t border-slate-800">
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors">
+        <div className="p-4 border-t border-slate-200">
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
             <LogOut className="w-5 h-5" />
             Sign Out
           </a>
@@ -136,43 +136,43 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="h-16 border-b border-slate-800 bg-slate-950 flex items-center justify-between px-6 md:px-8">
+        <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 md:px-8">
           <div className="flex items-center gap-4 md:hidden">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <FileText className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-white">ReceiptOCR</span>
+            <span className="font-bold text-slate-900">ReceiptOCR</span>
           </div>
           
-          <div className="hidden md:flex items-center gap-2 text-sm text-slate-400">
+          <div className="hidden md:flex items-center gap-2 text-sm text-slate-500">
             <span>Organization</span>
-            <span className="text-slate-600">/</span>
-            <span className="text-white font-medium">My Company</span>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-900 font-medium">My Company</span>
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-900 rounded-full transition-colors relative">
+            <button className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors relative">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-slate-950"></span>
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full border-2 border-slate-800"></div>
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full border-2 border-slate-200"></div>
           </div>
         </header>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8">
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50">
           <div className="max-w-6xl mx-auto space-y-8">
             
             {/* Page Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-white">Overview</h1>
-                <p className="text-slate-400 text-sm mt-1">Track your expenses and manage receipts.</p>
+                <h1 className="text-2xl font-bold text-slate-900">Overview</h1>
+                <p className="text-slate-500 text-sm mt-1">Track your expenses and manage receipts.</p>
               </div>
               <div className="flex gap-3">
                 <button 
                   onClick={exportCSV}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors shadow-sm"
                 >
                   <Download className="w-4 h-4" />
                   Export CSV
@@ -189,37 +189,37 @@ export default function DashboardPage() {
 
             {/* Stats Cards - Qonto Style */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
+              <div className="bg-white border border-slate-200 p-6 rounded-xl hover:border-slate-300 transition-colors shadow-sm">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="p-2 bg-blue-500/10 rounded-lg">
-                    <Wallet className="w-5 h-5 text-blue-400" />
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <Wallet className="w-5 h-5 text-blue-600" />
                   </div>
-                  <span className="text-xs font-medium text-green-400 bg-green-400/10 px-2 py-1 rounded-full">+12%</span>
+                  <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+12%</span>
                 </div>
-                <p className="text-slate-400 text-sm font-medium">Total Expenses</p>
-                <p className="text-3xl font-bold text-white mt-1">
-                  {totalAmount.toFixed(2)} <span className="text-lg text-slate-500 font-normal">EUR</span>
+                <p className="text-slate-500 text-sm font-medium">Total Expenses</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">
+                  {totalAmount.toFixed(2)} <span className="text-lg text-slate-400 font-normal">EUR</span>
                 </p>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
+              <div className="bg-white border border-slate-200 p-6 rounded-xl hover:border-slate-300 transition-colors shadow-sm">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="p-2 bg-purple-500/10 rounded-lg">
-                    <FileText className="w-5 h-5 text-purple-400" />
+                  <div className="p-2 bg-purple-50 rounded-lg">
+                    <FileText className="w-5 h-5 text-purple-600" />
                   </div>
                 </div>
-                <p className="text-slate-400 text-sm font-medium">Receipts Processed</p>
-                <p className="text-3xl font-bold text-white mt-1">{filteredReceipts.length}</p>
+                <p className="text-slate-500 text-sm font-medium">Receipts Processed</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{filteredReceipts.length}</p>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
+              <div className="bg-white border border-slate-200 p-6 rounded-xl hover:border-slate-300 transition-colors shadow-sm">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="p-2 bg-orange-500/10 rounded-lg">
-                    <PieChart className="w-5 h-5 text-orange-400" />
+                  <div className="p-2 bg-orange-50 rounded-lg">
+                    <PieChart className="w-5 h-5 text-orange-600" />
                   </div>
                 </div>
-                <p className="text-slate-400 text-sm font-medium">Top Category</p>
-                <p className="text-xl font-bold text-white mt-2 truncate">
+                <p className="text-slate-500 text-sm font-medium">Top Category</p>
+                <p className="text-xl font-bold text-slate-900 mt-2 truncate">
                   {filteredReceipts.length > 0 
                     ? filteredReceipts.sort((a,b) => 
                         filteredReceipts.filter(v => v.category === a.category).length - 
@@ -234,19 +234,19 @@ export default function DashboardPage() {
             {/* Filters & Search */}
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input 
                   type="text" 
                   placeholder="Search by merchant, category..." 
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all"
+                  className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all shadow-sm"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <div className="relative w-full md:w-48">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <select 
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent appearance-none cursor-pointer"
+                  className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent appearance-none cursor-pointer shadow-sm"
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
                 >
@@ -265,10 +265,10 @@ export default function DashboardPage() {
             </div>
 
             {/* Transactions Table */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl shadow-black/20">
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-950/50 text-slate-400 border-b border-slate-800">
+                  <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
                     <tr>
                       <th className="px-6 py-4 font-medium w-32">Date</th>
                       <th className="px-6 py-4 font-medium">Merchant</th>
@@ -278,7 +278,7 @@ export default function DashboardPage() {
                       <th className="px-6 py-4 font-medium text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800">
+                  <tbody className="divide-y divide-slate-200">
                     {loading ? (
                       <tr>
                         <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
@@ -296,19 +296,19 @@ export default function DashboardPage() {
                       </tr>
                     ) : (
                       filteredReceipts.map((receipt) => (
-                        <tr key={receipt.id} className="hover:bg-slate-800/50 transition-colors group">
-                          <td className="px-6 py-4 text-slate-400 whitespace-nowrap font-mono text-xs">
+                        <tr key={receipt.id} className="hover:bg-slate-50 transition-colors group">
+                          <td className="px-6 py-4 text-slate-500 whitespace-nowrap font-mono text-xs">
                             {receipt.date || "N/A"}
                           </td>
                           <td className="px-6 py-4">
-                            <div className="font-medium text-white">{receipt.merchant}</div>
+                            <div className="font-medium text-slate-900">{receipt.merchant}</div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
                               {receipt.category}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-right font-mono font-medium text-white">
+                          <td className="px-6 py-4 text-right font-mono font-medium text-slate-900">
                             -{receipt.amount_total?.toFixed(2)} {receipt.currency}
                           </td>
                           <td className="px-6 py-4">
@@ -318,7 +318,7 @@ export default function DashboardPage() {
                                   href={receipt.pdf_url} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
-                                  className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded transition-colors"
+                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                   title="Download PDF"
                                 >
                                   <FileText className="w-4 h-4" />
@@ -329,7 +329,7 @@ export default function DashboardPage() {
                                   href={receipt.excel_url} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
-                                  className="p-1.5 text-slate-400 hover:text-green-400 hover:bg-green-400/10 rounded transition-colors"
+                                  className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
                                   title="Download Excel"
                                 >
                                   <FileText className="w-4 h-4" />
@@ -340,7 +340,7 @@ export default function DashboardPage() {
                           <td className="px-6 py-4 text-right">
                             <Link 
                               href={`/receipts/${receipt.id}`}
-                              className="text-blue-400 hover:text-blue-300 text-xs font-medium hover:underline"
+                              className="text-blue-600 hover:text-blue-700 text-xs font-medium hover:underline"
                             >
                               Details
                             </Link>

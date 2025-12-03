@@ -2,94 +2,90 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Check, Zap, Shield, FileSpreadsheet } from "lucide-react";
+import { ArrowRight, Check, Zap, Shield, FileSpreadsheet, Sparkles } from "lucide-react";
 import UploadArea from "@/components/UploadArea";
 
 export default function Home() {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col items-center space-y-20">
+    <div className="flex flex-col items-center space-y-24 pb-20 relative overflow-hidden">
+      
+      {/* Background Elements */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]">
+        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_800px_at_100%_200px,#d5c5ff,transparent)] opacity-40"></div>
+      </div>
+
       {/* Hero Section */}
-      <section className="text-center space-y-8 max-w-4xl mx-auto pt-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-sm font-medium border border-blue-500/20">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-          </span>
-          Now with AI-powered extraction
+      <section className="text-center space-y-6 max-w-5xl mx-auto pt-6 px-4 relative">
+        
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-sm text-blue-600 text-sm font-medium border border-blue-100 shadow-sm ring-1 ring-blue-500/10 animate-fade-in-up">
+          <Sparkles className="w-4 h-4 fill-blue-600 text-blue-600" />
+          <span>Nouvelle IA de reconnaissance v2.0</span>
         </div>
         
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white">
-          Receipts to Excel <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
-            in seconds.
-          </span>
+        <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-slate-900 leading-tight">
+          Gagnez des heures <br className="hidden md:block" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">
+            en automatisant
+          </span>{" "}
+          vos factures.
         </h1>
         
-        <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          Stop manual data entry. Upload your receipts and let our AI extract merchant, date, totals, and line items automatically.
+        <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          Fini la saisie manuelle. Notre IA extrait instantanément les données de vos reçus et les exporte vers Excel.
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <Link
-            href="/login"
-            className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2"
-          >
-            Start for free <ArrowRight className="w-4 h-4" />
-          </Link>
-          <Link
-            href="/dashboard"
-            className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl transition-colors border border-slate-700"
-          >
-            View Demo
-          </Link>
-        </div>
-      </section>
-
-      {/* Interactive Demo Area */}
-      <section className="w-full max-w-3xl mx-auto">
-        <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-          <div className="relative bg-slate-950 rounded-xl border border-slate-800 p-1 shadow-2xl">
-            <div className="bg-slate-900/50 rounded-lg p-8">
-              <div className="text-center mb-8">
-                <h3 className="text-lg font-semibold text-white mb-2">Try it out right now</h3>
-                <p className="text-slate-400 text-sm">No account required for this demo</p>
-              </div>
+        {/* Upload Area - Modernized */}
+        <div className="w-full max-w-3xl mx-auto pt-8 relative z-10">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-violet-500 rounded-2xl blur opacity-20 animate-pulse"></div>
+          <div className="relative bg-white/80 backdrop-blur-xl rounded-xl border border-white/20 shadow-2xl shadow-blue-500/10 p-2">
+            <div className="bg-white/50 rounded-lg p-6 md:p-10 border border-slate-100">
               <UploadArea onUploadSuccess={(jobId) => router.push(`/receipts/${jobId}`)} />
             </div>
           </div>
+          <p className="text-sm text-slate-400 mt-4 flex items-center justify-center gap-4">
+            <span className="flex items-center gap-1"><Check className="w-3 h-3" /> Pas de carte requise</span>
+            <span className="flex items-center gap-1"><Check className="w-3 h-3" /> 100% Sécurisé</span>
+          </p>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="grid md:grid-cols-3 gap-8 w-full pt-10">
-        {[
-          {
-            icon: Zap,
-            title: "Instant Processing",
-            desc: "Get structured data from your receipts in under 5 seconds."
-          },
-          {
-            icon: FileSpreadsheet,
-            title: "Excel & PDF Export",
-            desc: "Download clean, formatted reports ready for your accountant."
-          },
-          {
-            icon: Shield,
-            title: "Bank-Grade Security",
-            desc: "Your financial data is encrypted and processed securely."
-          }
-        ].map((feature, i) => (
-          <div key={i} className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-slate-700 transition-colors">
-            <div className="w-12 h-12 bg-slate-800 rounded-lg flex items-center justify-center mb-4 text-blue-400">
-              <feature.icon className="w-6 h-6" />
+      {/* Features Grid - Modernized */}
+      <section className="w-full max-w-6xl mx-auto px-4">
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            {
+              icon: Zap,
+              title: "Traitement Instantané",
+              desc: "Obtenez des données structurées en moins de 5 secondes grâce à notre moteur OCR ultra-rapide.",
+              color: "text-amber-500",
+              bg: "bg-amber-50"
+            },
+            {
+              icon: FileSpreadsheet,
+              title: "Export Excel & PDF",
+              desc: "Téléchargez des rapports propres et formatés, prêts à être envoyés à votre comptable.",
+              color: "text-emerald-500",
+              bg: "bg-emerald-50"
+            },
+            {
+              icon: Shield,
+              title: "Sécurité Bancaire",
+              desc: "Vos données financières sont chiffrées de bout en bout et traitées avec la plus grande confidentialité.",
+              color: "text-blue-500",
+              bg: "bg-blue-50"
+            }
+          ].map((feature, i) => (
+            <div key={i} className="group p-8 rounded-3xl bg-white border border-slate-100 hover:border-blue-100 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300">
+              <div className={`w-14 h-14 ${feature.bg} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                <feature.icon className={`w-7 h-7 ${feature.color}`} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
+              <p className="text-slate-600 leading-relaxed">{feature.desc}</p>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-            <p className="text-slate-400 leading-relaxed">{feature.desc}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
     </div>
   );
