@@ -8,11 +8,18 @@ from app.services.pdf_export import pdf_export_service
 from app.config import settings
 import uuid
 import traceback
+import logging
 
 router = APIRouter()
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 async def process_receipt_job(job_id: str, file_bytes: bytes, file_ext: str):
     try:
+        print(f"Processing Job ID: {job_id}")
+        print(f"File size: {len(file_bytes)} bytes")
+        
         jobs_service.update_job_status(job_id, "processing")
 
         # 1. OCR
@@ -22,6 +29,7 @@ async def process_receipt_job(job_id: str, file_bytes: bytes, file_ext: str):
         # For this MVP, let's assume images. If PDF, we'd need pdf2image.
         
         text = ocr_service.extract_text_from_image(file_bytes)
+        print(f"Extracted text (first 50 chars): {text[:50] if text else 'None'}")
         
         # 2. Parse
         receipt_data = parser_service.parse_receipt(text)
