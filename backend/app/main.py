@@ -3,18 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import vision
 import os
 import base64
-import sys
 
-# --- Import Fix for Render ---
-# Try absolute import first (standard for uvicorn from root), then relative (fallback)
-try:
-    from app.config import settings
-    from app.routers import upload, status, receipts
-except ImportError as e:
-    print(f"Absolute import failed: {e}, trying relative import...")
-    from .config import settings
-    from .routers import upload, status, receipts
-# -----------------------------
+# --- Relative Imports ---
+from .config import settings
+from .routers import upload, status, receipts
+# ------------------------
 
 # --- Google Cloud Credentials Setup for Render ---
 # Decode the Base64 encoded key from environment variable and write to a temp file
