@@ -1,32 +1,7 @@
-import sys
-import os
-
-# --- Debugging & Path Setup ---
-# Print debug info to logs to help diagnose Render issues
-print(f"DEBUG: Current Working Directory: {os.getcwd()}")
-print(f"DEBUG: Initial Sys Path: {sys.path}")
-
-# Ensure the 'backend' directory is in sys.path
-backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
-    print(f"DEBUG: Added {backend_dir} to sys.path")
-
-try:
-    # Verify config.py exists
-    app_dir = os.path.join(backend_dir, "app")
-    print(f"DEBUG: Contents of {app_dir}: {os.listdir(app_dir)}")
-except Exception as e:
-    print(f"DEBUG: Error listing app dir: {e}")
-# -----------------------------
-
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import vision
-
-# Use absolute imports now that path is fixed
-from app.config import settings
-from app.routers import upload, status, receipts
+import os
 import base64
 
 # --- Google Cloud Credentials Setup for Render ---
@@ -45,26 +20,14 @@ if encoded_key:
         print(f"Failed to decode GOOGLE_APPLICATION_CREDENTIALS_BASE64: {e}")
 # -------------------------------------------------
 
+from .config import settings
+from .routers import upload, status, receipts
+
 app = FastAPI(title="Receipt OCR API")
-
-# Initialize Google Vision Client (Global for simple endpoint)
-try:
-    # This must happen AFTER the credential setup above
-    vision_client = vision.ImageAnnotatorClient()
-except Exception as e:
-    print(f"Warning: Could not initialize global Vision client: {e}")
-    vision_client = None
-
-# CORS Configuration
-origins = [
-    "http://localhost:3000",
-    "https://receipt-ocr-frontend.vercel.app", # Example Vercel URL
-    "*" # Allow all for development/MVP, restrict in production
-]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -76,8 +39,16 @@ app.include_router(status.router, tags=["Status"])
 app.include_router(receipts.router, tags=["Receipts"])
 
 @app.get("/")
-def read_root():
-    return {"message": "Receipt OCR API is running"}
+def root():
+    return {"status": "backend running"}
+
+# Initialize Google Vision Client (Global for simple endpoint)
+try:
+    # This must happen AFTER the credential setup above
+    vision_client = vision.ImageAnnotatorClient()
+except Exception as e:
+    print(f"Warning: Could not initialize global Vision client: {e}")
+    vision_client = None
 
 @app.post("/ocr")
 async def ocr_receipt(file: UploadFile = File(...)):

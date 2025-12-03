@@ -1,6 +1,6 @@
 from google.cloud import vision
 from google.oauth2 import service_account
-from app.config import settings
+from ..config import settings
 import os
 
 class OCRService:
