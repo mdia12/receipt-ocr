@@ -9,22 +9,25 @@ export default function Navbar() {
 
   return (
     <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between relative">
         
-        {/* Left: Hamburger (Mobile) & Logo */}
-        <div className="flex items-center gap-4">
+        {/* Left: Hamburger (Mobile) */}
+        <div className="flex items-center md:hidden z-20">
           <button 
-            className="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+            className="p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg"
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
+        </div>
           
+        {/* Logo: Centered on Mobile, Left on Desktop */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0">
           <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight text-slate-900 hover:opacity-90 transition-opacity">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-violet-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
               N
             </div>
-            <span className="hidden sm:inline">NovaReceipt</span>
+            <span>NovaReceipt</span>
           </Link>
         </div>
 
