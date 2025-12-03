@@ -20,8 +20,7 @@ class JobsService:
             self.supabase.table(self.table).insert(data).execute()
         except Exception as e:
             print(f"Error creating job: {e}")
-            # In a real app, we might want to re-raise or handle this better
-            pass
+            raise e
 
     def update_job_status(self, job_id: str, status: str):
         try:
