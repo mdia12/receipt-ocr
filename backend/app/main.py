@@ -1,9 +1,15 @@
+import sys
+import os
+
+# Add the parent directory to sys.path to allow absolute imports
+# This fixes ModuleNotFoundError on some deployment environments (like Render)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import vision
 from app.config import settings
 from app.routers import upload, status, receipts
-import os
 import base64
 
 # --- Google Cloud Credentials Setup for Render ---
