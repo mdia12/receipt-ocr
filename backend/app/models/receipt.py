@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import List, Optional
+from pydantic import BaseModel, Field
+from typing import List, Optional, Literal
 from datetime import datetime
 
 class ReceiptItem(BaseModel):
@@ -8,13 +8,15 @@ class ReceiptItem(BaseModel):
     vat: Optional[float] = 0.0
 
 class ReceiptData(BaseModel):
-    merchant: Optional[str] = "Unknown"
-    date: Optional[str] = None
-    amount: float = 0.0
-    vat: float = 0.0
-    category: str = "Uncategorized"
+    merchant: str = Field(..., description="The name of the merchant or business.")
+    date: Optional[str] = Field(None, description="The date of the transaction in ISO format YYYY-MM-DD.")
+    amount_total: float = Field(..., description="The total amount paid.")
+    currency: str = Field("EUR", description="The currency of the transaction (e.g., EUR, USD, GBP).")
+    vat_amount: Optional[float] = Field(None, description="The total VAT amount if present.")
+    category: Optional[str] = Field("Uncategorized", description="Expense category.")
     items: List[ReceiptItem] = []
-    currency: str = "EUR"
+    document_type: Literal["invoice", "receipt", "other"] = Field("receipt", description="The type of document.")
+    confidence: float = Field(0.0, description="A confidence score between 0.0 and 1.0.")
 
 class JobStatus(BaseModel):
     job_id: str

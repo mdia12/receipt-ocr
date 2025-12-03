@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     PORT: int = 8000
     HOST: str = "0.0.0.0"
 
+    # OpenAI
+    OPENAI_API_KEY: str | None = None
+
     def get_google_credentials_dict(self):
         if not self.GOOGLE_APPLICATION_CREDENTIALS_BASE64:
             return None

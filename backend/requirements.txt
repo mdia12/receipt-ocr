@@ -10,3 +10,4 @@ openpyxl
 reportlab
 pydantic-settings
 python-dotenv
+openai

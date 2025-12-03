@@ -25,8 +25,8 @@ class PDFExportService:
             ["Merchant:", receipt.merchant],
             ["Date:", receipt.date or "N/A"],
             ["Category:", receipt.category],
-            ["Total Amount:", f"{receipt.amount:.2f} {receipt.currency}"],
-            ["VAT:", f"{receipt.vat:.2f} {receipt.currency}"]
+            ["Total Amount:", f"{receipt.amount_total:.2f} {receipt.currency}"],
+            ["VAT:", f"{receipt.vat_amount:.2f} {receipt.currency}" if receipt.vat_amount else "0.00"]
         ]
         
         t_info = Table(info_data, colWidths=[100, 300])

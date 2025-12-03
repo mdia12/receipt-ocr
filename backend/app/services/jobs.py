@@ -28,12 +28,15 @@ class JobsService:
         except Exception as e:
             print(f"Error updating job status: {e}")
 
-    def mark_job_ready(self, job_id: str, excel_url: str, pdf_url: str):
+    def mark_job_ready(self, job_id: str, excel_url: str, pdf_url: str, receipt_data: dict = None):
         data = {
             "status": "ready",
             "excel_url": excel_url,
             "pdf_url": pdf_url
         }
+        if receipt_data:
+            data["receipt_data"] = receipt_data
+            
         try:
             self.supabase.table(self.table).update(data).eq("job_id", job_id).execute()
         except Exception as e:

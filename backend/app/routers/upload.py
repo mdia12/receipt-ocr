@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
 from app.services.storage import storage_service
 from app.services.jobs import jobs_service
 from app.services.ocr import ocr_service
-from app.services.parser import parser_service
+from app.services.llm_parser import llm_parser_service
 from app.services.excel_export import excel_export_service
 from app.services.pdf_export import pdf_export_service
 from app.config import settings
@@ -29,9 +29,9 @@ async def process_receipt_job(job_id: str, file_bytes: bytes, file_ext: str):
         text = ocr_service.extract_text_from_image(file_bytes)
         print(f"[{job_id}] OCR Text (first 100 chars): {text[:100] if text else 'None'}")
         
-        # 2. Parse
-        receipt_data = parser_service.parse_receipt(text)
-        print(f"[{job_id}] Parsed Data: Merchant={receipt_data.merchant}, Amount={receipt_data.amount}, Date={receipt_data.date}")
+        # 2. Parse with LLM
+        receipt_data = llm_parser_service.parse_receipt_with_llm(text)
+        print(f"[{job_id}] LLM Parsed Data: {receipt_data}")
         
         # 3. Generate Excel
         excel_bytes = excel_export_service.generate_excel(receipt_data)
@@ -54,7 +54,7 @@ async def process_receipt_job(job_id: str, file_bytes: bytes, file_ext: str):
         )
         
         # 5. Update Job
-        jobs_service.mark_job_ready(job_id, excel_url, pdf_url)
+        jobs_service.mark_job_ready(job_id, excel_url, pdf_url, receipt_data.model_dump())
         
         # TODO: Save structured receipt data to 'receipts' table if needed
         
