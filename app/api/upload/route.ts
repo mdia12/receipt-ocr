@@ -9,15 +9,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    // TODO: Upload file to Supabase Storage or S3
-    // TODO: Call FastAPI backend to start OCR job
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+      throw new Error("NEXT_PUBLIC_API_URL is not defined");
+    }
 
-    // Mock response
-    const jobId = "job_" + Math.random().toString(36).substring(7);
+    // Forward the file to the FastAPI backend
+    // Assuming backend accepts POST /upload with multipart/form-data
+    const backendResponse = await fetch(`${apiUrl}/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!backendResponse.ok) {
+      const errorText = await backendResponse.text();
+      console.error("Backend error:", errorText);
+      return NextResponse.json(
+        { error: "Backend processing failed", details: errorText },
+        { status: backendResponse.status }
+      );
+    }
+
+    const data = await backendResponse.json();
     
     return NextResponse.json({ 
       success: true, 
-      jobId,
+      jobId: data.job_id, // Assuming backend returns { job_id: "..." }
       message: "File uploaded and processing started" 
     });
   } catch (error) {

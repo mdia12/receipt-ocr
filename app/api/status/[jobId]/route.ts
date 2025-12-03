@@ -6,14 +6,29 @@ export async function GET(
 ) {
   const { jobId } = await params;
 
-  // TODO: Check status from database or FastAPI backend
-  
-  // Mock response
-  const status = Math.random() > 0.5 ? "completed" : "processing";
-  
-  return NextResponse.json({
-    jobId,
-    status,
-    progress: status === "completed" ? 100 : 50
-  });
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    return NextResponse.json({ error: "Configuration error" }, { status: 500 });
+  }
+
+  try {
+    // Check status from FastAPI backend
+    // Assuming backend has GET /status/{jobId}
+    const backendResponse = await fetch(`${apiUrl}/status/${jobId}`);
+
+    if (!backendResponse.ok) {
+      if (backendResponse.status === 404) {
+        return NextResponse.json({ error: "Job not found" }, { status: 404 });
+      }
+      throw new Error("Failed to fetch job status");
+    }
+
+    const data = await backendResponse.json();
+    
+    // Assuming backend returns { status: "processing" | "completed" | "failed", ... }
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Status check error:", error);
+    return NextResponse.json({ error: "Failed to check status" }, { status: 500 });
+  }
 }
