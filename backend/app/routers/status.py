@@ -12,6 +12,7 @@ async def check_status(job_id: str):
     return {
         "job_id": job["job_id"],
         "status": job["status"],
+        "file_url": job.get("file_url"),
         "excel_url": job.get("excel_url"),
         "pdf_url": job.get("pdf_url"),
         "error": job.get("error"),
