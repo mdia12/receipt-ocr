@@ -9,6 +9,8 @@ async def check_status(job_id: str):
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     
+    receipt_data = job.get("receipt_data") or {}
+    
     return {
         "job_id": job["job_id"],
         "status": job["status"],
@@ -16,5 +18,12 @@ async def check_status(job_id: str):
         "excel_url": job.get("excel_url"),
         "pdf_url": job.get("pdf_url"),
         "error": job.get("error"),
-        "created_at": job.get("created_at")
+        "created_at": job.get("created_at"),
+        # Flatten receipt data for easier frontend consumption
+        "merchant": receipt_data.get("merchant"),
+        "amount_total": receipt_data.get("amount_total"),
+        "date": receipt_data.get("date"),
+        "currency": receipt_data.get("currency"),
+        "category": receipt_data.get("category"),
+        "category_confidence": receipt_data.get("category_confidence")
     }

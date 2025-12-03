@@ -1,6 +1,19 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional, Literal
 from datetime import datetime
+from enum import Enum
+
+class ExpenseCategory(str, Enum):
+    RESTAURANT = "RESTAURANT"
+    COURSES = "COURSES"
+    TAXI = "TAXI"
+    HOTEL = "HOTEL"
+    DOMICILE = "DOMICILE"
+    ESSENCE = "ESSENCE"
+    LOISIR = "LOISIR"
+    ABONNEMENT = "ABONNEMENT"
+    TRANSPORT = "TRANSPORT"
+    AUTRE = "AUTRE"
 
 class ReceiptItem(BaseModel):
     description: str
@@ -13,7 +26,8 @@ class ReceiptData(BaseModel):
     amount_total: float = Field(..., description="The total amount paid.")
     currency: str = Field("EUR", description="The currency of the transaction (e.g., EUR, USD, GBP).")
     vat_amount: Optional[float] = Field(None, description="The total VAT amount if present.")
-    category: Optional[str] = Field("Uncategorized", description="Expense category.")
+    category: ExpenseCategory = Field(ExpenseCategory.AUTRE, description="Expense category.")
+    category_confidence: float = Field(0.0, description="Confidence score for the category.")
     items: List[ReceiptItem] = []
     document_type: Literal["invoice", "receipt", "other"] = Field("receipt", description="The type of document.")
     confidence: float = Field(0.0, description="A confidence score between 0.0 and 1.0.")
