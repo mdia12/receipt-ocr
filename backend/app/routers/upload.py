@@ -8,18 +8,16 @@ from app.services.pdf_export import pdf_export_service
 from app.config import settings
 import uuid
 import traceback
-import logging
+import hashlib
 
 router = APIRouter()
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
 async def process_receipt_job(job_id: str, file_bytes: bytes, file_ext: str):
     try:
-        print(f"Processing Job ID: {job_id}")
-        print(f"File size: {len(file_bytes)} bytes")
-        
+        # Calculate checksum for debug
+        file_hash = hashlib.md5(file_bytes).hexdigest()
+        print(f"[{job_id}] Processing file. Size: {len(file_bytes)}, MD5: {file_hash}")
+
         jobs_service.update_job_status(job_id, "processing")
 
         # 1. OCR
@@ -29,10 +27,11 @@ async def process_receipt_job(job_id: str, file_bytes: bytes, file_ext: str):
         # For this MVP, let's assume images. If PDF, we'd need pdf2image.
         
         text = ocr_service.extract_text_from_image(file_bytes)
-        print(f"Extracted text (first 50 chars): {text[:50] if text else 'None'}")
+        print(f"[{job_id}] OCR Text (first 100 chars): {text[:100] if text else 'None'}")
         
         # 2. Parse
         receipt_data = parser_service.parse_receipt(text)
+        print(f"[{job_id}] Parsed Data: Merchant={receipt_data.merchant}, Amount={receipt_data.amount}, Date={receipt_data.date}")
         
         # 3. Generate Excel
         excel_bytes = excel_export_service.generate_excel(receipt_data)
