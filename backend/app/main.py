@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from google.cloud import vision
 from app.config import settings
 from app.routers import upload, status, receipts
 import os
@@ -22,6 +23,14 @@ if encoded_key:
 # -------------------------------------------------
 
 app = FastAPI(title="Receipt OCR API")
+
+# Initialize Google Vision Client (Global for simple endpoint)
+try:
+    # This must happen AFTER the credential setup above
+    vision_client = vision.ImageAnnotatorClient()
+except Exception as e:
+    print(f"Warning: Could not initialize global Vision client: {e}")
+    vision_client = None
 
 # CORS Configuration
 origins = [
@@ -46,6 +55,30 @@ app.include_router(receipts.router, tags=["Receipts"])
 @app.get("/")
 def read_root():
     return {"message": "Receipt OCR API is running"}
+
+@app.post("/ocr")
+async def ocr_receipt(file: UploadFile = File(...)):
+    """
+    Simple direct OCR endpoint for testing/debugging.
+    """
+    if not vision_client:
+        return {"error": "Google Vision Client not initialized. Check server logs."}
+
+    content = await file.read()
+
+    image = vision.Image(content=content)
+    # Using document_text_detection as requested
+    response = vision_client.document_text_detection(image=image)
+    
+    if response.error.message:
+        return {"error": f"Google Vision API Error: {response.error.message}"}
+
+    if not response.full_text_annotation:
+        return {"text": ""}
+
+    text = response.full_text_annotation.text
+
+    return {"text": text}
 
 if __name__ == "__main__":
     import uvicorn
