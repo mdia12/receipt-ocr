@@ -32,10 +32,32 @@ class ParserService:
 
     def _extract_merchant(self, lines: List[str]) -> str:
         # Heuristic: The first non-empty line that looks like a name is often the merchant
-        # We skip lines that look like dates or just numbers
-        for line in lines[:5]: # Check first 5 lines
-            if len(line) > 2 and not re.match(r'^[\d\s\.\-\/]+$', line):
-                return line
+        # We skip lines that look like dates, numbers, or generic headers
+        skip_keywords = ["facture", "invoice", "receipt", "ticket", "cb", "visa", "mastercard", "total", "montant", "siret", "tva", "merci", "thank you", "welcome", "bienvenue"]
+        
+        for line in lines[:10]: # Check first 10 lines
+            clean_line = line.strip()
+            lower_line = clean_line.lower()
+            
+            # Skip empty or very short lines
+            if len(clean_line) < 3:
+                continue
+                
+            # Skip lines that look like phone numbers, dates, or prices (mostly digits/symbols)
+            if re.match(r'^[\d\s\.\-\/\+\:\,€$]+$', clean_line):
+                continue
+                
+            # Skip lines that are just generic headers
+            if lower_line in skip_keywords:
+                continue
+                
+            # Skip lines starting with common metadata labels
+            if any(lower_line.startswith(k) for k in ["date", "total", "tel", "fax", "http", "www", "siret", "tva"]):
+                continue
+
+            # If we passed all checks, this is likely the merchant name
+            return clean_line
+            
         return "Unknown Merchant"
 
     def _extract_date(self, text: str) -> str:
