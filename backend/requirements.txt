@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+python-multipart
+google-cloud-vision
+pydantic
+pillow
+supabase
+pandas
+openpyxl
+reportlab
+pydantic-settings
+python-dotenv
