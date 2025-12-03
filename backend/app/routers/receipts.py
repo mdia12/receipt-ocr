@@ -1,9 +1,32 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from app.services.jobs import jobs_service
-# In a real app, we would have a separate ReceiptsService to fetch from 'receipts' table
-# For now, we can reuse job info or mock it if the 'receipts' table isn't fully populated yet
+from typing import List, Optional
 
 router = APIRouter()
+
+@router.get("/receipts")
+async def list_receipts(limit: int = 50):
+    """
+    List all processed receipts.
+    """
+    jobs = jobs_service.get_all_jobs(limit=limit)
+    
+    results = []
+    for job in jobs:
+        receipt_data = job.get("receipt_data") or {}
+        results.append({
+            "id": job["job_id"],
+            "created_at": job["created_at"],
+            "merchant": receipt_data.get("merchant", "Unknown"),
+            "date": receipt_data.get("date"),
+            "amount_total": receipt_data.get("amount_total"),
+            "currency": receipt_data.get("currency"),
+            "category": receipt_data.get("category"),
+            "excel_url": job.get("excel_url"),
+            "pdf_url": job.get("pdf_url")
+        })
+        
+    return results
 
 @router.get("/receipts/{receipt_id}")
 async def get_receipt(receipt_id: str):

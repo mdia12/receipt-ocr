@@ -62,4 +62,18 @@ class JobsService:
             print(f"Error fetching job: {e}")
             return None
 
+    def get_all_jobs(self, limit: int = 50):
+        try:
+            # Fetch jobs ordered by creation date (newest first)
+            response = self.supabase.table(self.table)\
+                .select("*")\
+                .eq("status", "ready")\
+                .order("created_at", desc=True)\
+                .limit(limit)\
+                .execute()
+            return response.data
+        except Exception as e:
+            print(f"Error fetching all jobs: {e}")
+            return []
+
 jobs_service = JobsService()
