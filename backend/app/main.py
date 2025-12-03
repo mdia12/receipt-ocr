@@ -1,16 +1,32 @@
 import sys
 import os
 
-# Ensure the backend directory is in the path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# --- Debugging & Path Setup ---
+# Print debug info to logs to help diagnose Render issues
+print(f"DEBUG: Current Working Directory: {os.getcwd()}")
+print(f"DEBUG: Initial Sys Path: {sys.path}")
+
+# Ensure the 'backend' directory is in sys.path
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+    print(f"DEBUG: Added {backend_dir} to sys.path")
+
+try:
+    # Verify config.py exists
+    app_dir = os.path.join(backend_dir, "app")
+    print(f"DEBUG: Contents of {app_dir}: {os.listdir(app_dir)}")
+except Exception as e:
+    print(f"DEBUG: Error listing app dir: {e}")
+# -----------------------------
 
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import vision
 
-# Use relative imports for internal modules to avoid path issues
-from .config import settings
-from .routers import upload, status, receipts
+# Use absolute imports now that path is fixed
+from app.config import settings
+from app.routers import upload, status, receipts
 import base64
 
 # --- Google Cloud Credentials Setup for Render ---
