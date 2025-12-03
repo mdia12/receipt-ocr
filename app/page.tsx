@@ -25,11 +25,10 @@ export default function Home() {
         </div>
         
         <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-slate-900 leading-tight">
-          Gagnez des heures <br className="hidden md:block" />
+          Automatisez votre comptabilité <br className="hidden md:block" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">
-            en automatisant
-          </span>{" "}
-          vos factures.
+            grâce à l'IA
+          </span>
         </h1>
         
         <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">

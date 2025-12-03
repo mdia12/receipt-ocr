@@ -43,11 +43,11 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
   const validateAndSetFile = (file: File) => {
     const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
     if (!validTypes.includes(file.type)) {
-      setError("Please upload a JPG, PNG, or PDF file.");
+      setError("Veuillez télécharger un fichier JPG, PNG ou PDF.");
       return;
     }
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      setError("File size must be less than 5MB.");
+      setError("La taille du fichier doit être inférieure à 5 Mo.");
       return;
     }
     
@@ -80,7 +80,7 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
         setFile(null); // Reset after success
       }
     } catch (err) {
-      setError("Failed to upload file. Please try again.");
+      setError("Échec du téléchargement. Veuillez réessayer.");
       console.error(err);
     } finally {
       setIsUploading(false);
@@ -110,16 +110,17 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
             onChange={handleFileSelect}
             className="hidden"
             accept=".jpg,.jpeg,.png,.pdf"
+            capture="environment"
           />
           <div className={`p-4 rounded-full ${isDragging ? "bg-blue-100" : "bg-white shadow-sm border border-slate-200"}`}>
             <UploadCloud className={`w-8 h-8 ${isDragging ? "text-blue-600" : "text-slate-400"}`} />
           </div>
           <div>
             <p className="text-lg font-medium text-slate-900">
-              {isDragging ? "Drop file here" : "Drag & drop receipt here"}
+              {isDragging ? "Déposez le fichier ici" : "Prenez une photo ou déposez votre reçu"}
             </p>
             <p className="text-sm text-slate-500 mt-1">
-              or click to browse (JPG, PNG, PDF up to 5MB)
+              ou cliquez pour parcourir (JPG, PNG, PDF max 5Mo)
             </p>
           </div>
         </div>
@@ -158,10 +159,10 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
             {isUploading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Processing...
+                Traitement en cours...
               </>
             ) : (
-              "Process Receipt"
+              "Traiter le reçu"
             )}
           </button>
         </div>
