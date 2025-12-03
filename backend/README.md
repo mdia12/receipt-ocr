@@ -1,6 +1,6 @@
-# Receipt OCR Backend
+# NovaReceipt Backend
 
-This is the FastAPI backend for the Receipt OCR SaaS. It handles file uploads, OCR processing via Google Cloud Vision, data parsing, and export generation (Excel/PDF).
+This is the FastAPI backend for NovaReceipt. It handles file uploads, OCR processing via Google Cloud Vision, data parsing, and export generation (Excel/PDF).
 
 ## Deployment on Render
 

@@ -25,7 +25,7 @@ if encoded_key:
         print(f"Failed to decode GOOGLE_APPLICATION_CREDENTIALS_BASE64: {e}")
 # -------------------------------------------------
 
-app = FastAPI(title="Receipt OCR API")
+app = FastAPI(title="NovaReceipt API")
 
 app.add_middleware(
     CORSMiddleware,

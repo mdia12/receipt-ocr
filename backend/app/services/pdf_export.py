@@ -17,7 +17,7 @@ class PDFExportService:
         styles = getSampleStyleSheet()
 
         # Title
-        elements.append(Paragraph("Receipt OCR – Parsed Data", styles['Title']))
+        elements.append(Paragraph("NovaReceipt – Parsed Data", styles['Title']))
         elements.append(Spacer(1, 20))
 
         # Summary Info
@@ -65,7 +65,7 @@ class PDFExportService:
 
         # Footer
         elements.append(Spacer(1, 40))
-        elements.append(Paragraph("Generated automatically by Receipt OCR SaaS", styles['Italic']))
+        elements.append(Paragraph("Generated automatically by NovaReceipt", styles['Italic']))
 
         doc.build(elements)
         return buffer.getvalue()
