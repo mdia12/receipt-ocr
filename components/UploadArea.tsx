@@ -126,19 +126,19 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-xl p-4 md:p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="p-2 bg-blue-50 rounded-lg flex-shrink-0">
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-start gap-3 overflow-hidden">
+              <div className="p-2 bg-blue-50 rounded-lg flex-shrink-0 mt-1">
                 <FileIcon className="w-6 h-6 text-blue-600" />
               </div>
               <div className="min-w-0">
-                <p className="font-medium text-slate-900 truncate">{file.name}</p>
+                <p className="font-medium text-slate-900 break-all">{file.name}</p>
                 <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(1)} KB</p>
               </div>
             </div>
             <button 
               onClick={() => setFile(null)}
-              className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 flex-shrink-0 ml-2"
+              className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 flex-shrink-0 ml-2 mt-1"
               disabled={isUploading}
             >
               <X className="w-5 h-5" />
