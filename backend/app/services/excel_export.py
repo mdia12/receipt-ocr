@@ -30,6 +30,25 @@ class ExcelExportService:
             for column_cells in worksheet.columns:
                 length = max(len(str(cell.value)) for cell in column_cells)
                 worksheet.column_dimensions[column_cells[0].column_letter].width = length + 2
+            
+            # Add Items Sheet if items exist
+            if receipt.items:
+                items_data = []
+                for item in receipt.items:
+                    items_data.append({
+                        "Description": item.description,
+                        "Amount": item.amount,
+                        "VAT": item.vat
+                    })
+                
+                df_items = pd.DataFrame(items_data)
+                df_items.to_excel(writer, index=False, sheet_name='Line Items')
+                
+                # Adjust widths for items sheet
+                worksheet_items = writer.sheets['Line Items']
+                for column_cells in worksheet_items.columns:
+                    length = max(len(str(cell.value)) for cell in column_cells)
+                    worksheet_items.column_dimensions[column_cells[0].column_letter].width = length + 2
                 
         return output.getvalue()
 

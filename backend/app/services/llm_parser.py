@@ -35,8 +35,9 @@ class LLMParserService:
         4. Identify the **VAT Amount** (TVA). If multiple rates, sum them up.
         5. Determine the **Currency** (EUR, USD, etc.).
         6. Classify the **Category** (e.g., Restaurant, Transport, Accommodation, Groceries, Utilities, Other).
-        7. Classify the document type: "invoice", "receipt", or "other".
-        8. Provide a **confidence score** (0.0 to 1.0) based on how clear the data is.
+        7. Extract **Line Items**: Identify individual products or services, their price, and VAT if available.
+        8. Classify the document type: "invoice", "receipt", or "other".
+        9. Provide a **confidence score** (0.0 to 1.0) based on how clear the data is.
         
         OUTPUT FORMAT:
         Return ONLY a valid JSON object matching this structure:
@@ -47,6 +48,13 @@ class LLMParserService:
             "currency": "string",
             "vat_amount": float or null,
             "category": "string",
+            "items": [
+                {{
+                    "description": "string",
+                    "amount": float,
+                    "vat": float or null
+                }}
+            ],
             "document_type": "invoice" | "receipt" | "other",
             "confidence": float
         }}
