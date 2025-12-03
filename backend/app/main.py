@@ -3,6 +3,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import vision
 import os
 import base64
+import sys
+
+# --- Path Setup for Render ---
+# This ensures that the 'backend' directory is treated as the root for imports
+# regardless of how uvicorn is started.
+current_dir = os.path.dirname(os.path.abspath(__file__)) # backend/app
+backend_dir = os.path.dirname(current_dir)               # backend
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+# -----------------------------
+
+# Use absolute imports - this is the most standard way for FastAPI
+from app.config import settings
+from app.routers import upload, status, receipts
 
 # --- Google Cloud Credentials Setup for Render ---
 # Decode the Base64 encoded key from environment variable and write to a temp file
@@ -19,9 +33,6 @@ if encoded_key:
     except Exception as e:
         print(f"Failed to decode GOOGLE_APPLICATION_CREDENTIALS_BASE64: {e}")
 # -------------------------------------------------
-
-from .config import settings
-from .routers import upload, status, receipts
 
 app = FastAPI(title="Receipt OCR API")
 

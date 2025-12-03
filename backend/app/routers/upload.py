@@ -1,11 +1,11 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
-from ..services.storage import storage_service
-from ..services.jobs import jobs_service
-from ..services.ocr import ocr_service
-from ..services.parser import parser_service
-from ..services.excel_export import excel_export_service
-from ..services.pdf_export import pdf_export_service
-from ..config import settings
+from app.services.storage import storage_service
+from app.services.jobs import jobs_service
+from app.services.ocr import ocr_service
+from app.services.parser import parser_service
+from app.services.excel_export import excel_export_service
+from app.services.pdf_export import pdf_export_service
+from app.config import settings
 import uuid
 import traceback
 

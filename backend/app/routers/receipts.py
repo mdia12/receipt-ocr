@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from ..services.jobs import jobs_service
+from app.services.jobs import jobs_service
 # In a real app, we would have a separate ReceiptsService to fetch from 'receipts' table
 # For now, we can reuse job info or mock it if the 'receipts' table isn't fully populated yet
 
