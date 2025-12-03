@@ -96,7 +96,7 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           className={`
-            relative border-2 border-dashed rounded-xl p-8 transition-all cursor-pointer
+            relative border-2 border-dashed rounded-xl p-6 md:p-8 transition-all cursor-pointer
             flex flex-col items-center justify-center text-center space-y-4
             ${isDragging 
               ? "border-blue-500 bg-blue-50" 
@@ -116,7 +116,7 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
             <UploadCloud className={`w-8 h-8 ${isDragging ? "text-blue-600" : "text-slate-400"}`} />
           </div>
           <div>
-            <p className="text-lg font-medium text-slate-900">
+            <p className="text-base md:text-lg font-medium text-slate-900">
               {isDragging ? "Déposez le fichier ici" : "Prenez une photo ou déposez votre reçu"}
             </p>
             <p className="text-sm text-slate-500 mt-1">
@@ -125,20 +125,20 @@ export default function UploadArea({ onUploadSuccess }: UploadAreaProps) {
           </div>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 md:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 rounded-lg">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="p-2 bg-blue-50 rounded-lg flex-shrink-0">
                 <FileIcon className="w-6 h-6 text-blue-600" />
               </div>
-              <div>
-                <p className="font-medium text-slate-900">{file.name}</p>
+              <div className="min-w-0">
+                <p className="font-medium text-slate-900 truncate">{file.name}</p>
                 <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(1)} KB</p>
               </div>
             </div>
             <button 
               onClick={() => setFile(null)}
-              className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600"
+              className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 flex-shrink-0 ml-2"
               disabled={isUploading}
             >
               <X className="w-5 h-5" />
