@@ -1,86 +1,360 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, X } from "lucide-react";
-import ReceiptTable from "@/components/ReceiptTable";
-import UploadArea from "@/components/UploadArea";
-import { Receipt } from "@/types/receipt";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { 
+  FileText, 
+  Download, 
+  Search, 
+  Filter, 
+  ArrowUpRight,
+  Loader2,
+  LayoutDashboard,
+  CreditCard,
+  Settings,
+  LogOut,
+  PieChart,
+  Wallet,
+  Bell
+} from "lucide-react";
 
-// Mock data
-const initialReceipts: Receipt[] = [
-  { id: "1", date: "2023-10-25", merchant: "Uber", amount: 24.50, currency: "USD", status: "completed" },
-  { id: "2", date: "2023-10-26", merchant: "Starbucks", amount: 12.90, currency: "USD", status: "processing" },
-  { id: "3", date: "2023-10-27", merchant: "Amazon AWS", amount: 145.00, currency: "USD", status: "failed" },
-];
+interface Receipt {
+  id: string;
+  created_at: string;
+  merchant: string;
+  date: string;
+  amount_total: number;
+  currency: string;
+  category: string;
+  excel_url: string;
+  pdf_url: string;
+}
 
 export default function DashboardPage() {
-  const [showUpload, setShowUpload] = useState(false);
-  const [receipts, setReceipts] = useState<Receipt[]>(initialReceipts);
+  const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
 
-  const handleUploadSuccess = (jobId: string) => {
-    // Add a new processing receipt to the list
-    const newReceipt: Receipt = {
-      id: jobId,
-      date: new Date().toISOString().split('T')[0],
-      merchant: "Processing...",
-      amount: 0,
-      currency: "USD",
-      status: "processing"
+  useEffect(() => {
+    const fetchReceipts = async () => {
+      try {
+        const res = await fetch("/api/receipts");
+        if (res.ok) {
+          const data = await res.json();
+          setReceipts(data);
+        }
+      } catch (error) {
+        console.error("Failed to load receipts", error);
+      } finally {
+        setLoading(false);
+      }
     };
+
+    fetchReceipts();
+  }, []);
+
+  const filteredReceipts = receipts.filter((r) => {
+    const matchesSearch = 
+      r.merchant.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.category && r.category.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    setReceipts([newReceipt, ...receipts]);
-    setShowUpload(false);
+    const matchesCategory = categoryFilter === "ALL" || r.category === categoryFilter;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  const totalAmount = filteredReceipts.reduce((sum, r) => sum + (r.amount_total || 0), 0);
+
+  const exportCSV = () => {
+    const headers = ["Date,Merchant,Category,Amount,Currency,Link"];
+    const rows = filteredReceipts.map(r => 
+      `${r.date || ""},"${r.merchant}","${r.category || ""}",${r.amount_total},${r.currency},${window.location.origin}/receipts/${r.id}`
+    );
+    
+    const csvContent = "data:text/csv;charset=utf-8," + headers.concat(rows).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "receipts_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-          <p className="text-slate-400 mt-1">Manage and track your receipt processing.</p>
-        </div>
-        <button 
-          onClick={() => setShowUpload(!showUpload)}
-          className={`
-            flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium
-            ${showUpload 
-              ? "bg-slate-800 text-slate-300 hover:bg-slate-700" 
-              : "bg-blue-600 text-white hover:bg-blue-500"
-            }
-          `}
-        >
-          {showUpload ? (
-            <>
-              <X className="w-4 h-4" /> Cancel
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4" /> Upload Receipt
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Upload Section */}
-      {showUpload && (
-        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-8 animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className="max-w-xl mx-auto">
-            <h2 className="text-xl font-semibold text-white text-center mb-6">Upload New Receipt</h2>
-            <UploadArea onUploadSuccess={handleUploadSuccess} />
+    <div className="flex h-screen bg-slate-950 text-slate-200 font-sans">
+      {/* Sidebar */}
+      <aside className="w-64 border-r border-slate-800 bg-slate-950 flex flex-col hidden md:flex">
+        <div className="p-6 border-b border-slate-800">
+          <div className="flex items-center gap-2 text-white font-bold text-xl">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            ReceiptOCR
           </div>
         </div>
-      )}
+        
+        <nav className="flex-1 p-4 space-y-1">
+          <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            Main
+          </div>
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 bg-blue-600/10 text-blue-400 rounded-lg font-medium">
+            <LayoutDashboard className="w-5 h-5" />
+            Dashboard
+          </a>
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-slate-200 hover:bg-slate-900 rounded-lg transition-colors">
+            <Wallet className="w-5 h-5" />
+            Transactions
+          </a>
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-slate-200 hover:bg-slate-900 rounded-lg transition-colors">
+            <PieChart className="w-5 h-5" />
+            Analytics
+          </a>
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-slate-200 hover:bg-slate-900 rounded-lg transition-colors">
+            <CreditCard className="w-5 h-5" />
+            Cards
+          </a>
 
-      {/* Receipts List */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">Recent Receipts</h2>
-          <div className="text-sm text-slate-500">
-            Showing {receipts.length} receipts
+          <div className="mt-8 px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            Settings
+          </div>
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-slate-200 hover:bg-slate-900 rounded-lg transition-colors">
+            <Settings className="w-5 h-5" />
+            Preferences
+          </a>
+        </nav>
+
+        <div className="p-4 border-t border-slate-800">
+          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors">
+            <LogOut className="w-5 h-5" />
+            Sign Out
+          </a>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Header */}
+        <header className="h-16 border-b border-slate-800 bg-slate-950 flex items-center justify-between px-6 md:px-8">
+          <div className="flex items-center gap-4 md:hidden">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-bold text-white">ReceiptOCR</span>
+          </div>
+          
+          <div className="hidden md:flex items-center gap-2 text-sm text-slate-400">
+            <span>Organization</span>
+            <span className="text-slate-600">/</span>
+            <span className="text-white font-medium">My Company</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-900 rounded-full transition-colors relative">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-slate-950"></span>
+            </button>
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full border-2 border-slate-800"></div>
+          </div>
+        </header>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-8">
+          <div className="max-w-6xl mx-auto space-y-8">
+            
+            {/* Page Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-white">Overview</h1>
+                <p className="text-slate-400 text-sm mt-1">Track your expenses and manage receipts.</p>
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={exportCSV}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Export CSV
+                </button>
+                <Link 
+                  href="/"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors shadow-lg shadow-blue-500/20"
+                >
+                  <ArrowUpRight className="w-4 h-4" />
+                  New Scan
+                </Link>
+              </div>
+            </div>
+
+            {/* Stats Cards - Qonto Style */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <Wallet className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <span className="text-xs font-medium text-green-400 bg-green-400/10 px-2 py-1 rounded-full">+12%</span>
+                </div>
+                <p className="text-slate-400 text-sm font-medium">Total Expenses</p>
+                <p className="text-3xl font-bold text-white mt-1">
+                  {totalAmount.toFixed(2)} <span className="text-lg text-slate-500 font-normal">EUR</span>
+                </p>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <FileText className="w-5 h-5 text-purple-400" />
+                  </div>
+                </div>
+                <p className="text-slate-400 text-sm font-medium">Receipts Processed</p>
+                <p className="text-3xl font-bold text-white mt-1">{filteredReceipts.length}</p>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="p-2 bg-orange-500/10 rounded-lg">
+                    <PieChart className="w-5 h-5 text-orange-400" />
+                  </div>
+                </div>
+                <p className="text-slate-400 text-sm font-medium">Top Category</p>
+                <p className="text-xl font-bold text-white mt-2 truncate">
+                  {filteredReceipts.length > 0 
+                    ? filteredReceipts.sort((a,b) => 
+                        filteredReceipts.filter(v => v.category === a.category).length - 
+                        filteredReceipts.filter(v => v.category === b.category).length
+                      ).pop()?.category || "N/A"
+                    : "N/A"
+                  }
+                </p>
+              </div>
+            </div>
+
+            {/* Filters & Search */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input 
+                  type="text" 
+                  placeholder="Search by merchant, category..." 
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="relative w-full md:w-48">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <select 
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent appearance-none cursor-pointer"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                >
+                  <option value="ALL">All Categories</option>
+                  <option value="RESTAURANT">Restaurant</option>
+                  <option value="COURSES">Courses</option>
+                  <option value="TAXI">Taxi</option>
+                  <option value="HOTEL">Hotel</option>
+                  <option value="TRANSPORT">Transport</option>
+                  <option value="ESSENCE">Essence</option>
+                  <option value="LOISIR">Loisir</option>
+                  <option value="ABONNEMENT">Abonnement</option>
+                  <option value="AUTRE">Autre</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Transactions Table */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl shadow-black/20">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-950/50 text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th className="px-6 py-4 font-medium w-32">Date</th>
+                      <th className="px-6 py-4 font-medium">Merchant</th>
+                      <th className="px-6 py-4 font-medium">Category</th>
+                      <th className="px-6 py-4 font-medium text-right">Amount</th>
+                      <th className="px-6 py-4 font-medium text-center">Files</th>
+                      <th className="px-6 py-4 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                          <div className="flex flex-col items-center gap-2">
+                            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                            <span>Loading transactions...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : filteredReceipts.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                          No receipts found matching your filters.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredReceipts.map((receipt) => (
+                        <tr key={receipt.id} className="hover:bg-slate-800/50 transition-colors group">
+                          <td className="px-6 py-4 text-slate-400 whitespace-nowrap font-mono text-xs">
+                            {receipt.date || "N/A"}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="font-medium text-white">{receipt.merchant}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                              {receipt.category}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right font-mono font-medium text-white">
+                            -{receipt.amount_total?.toFixed(2)} {receipt.currency}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex justify-center gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                              {receipt.pdf_url && (
+                                <a 
+                                  href={receipt.pdf_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded transition-colors"
+                                  title="Download PDF"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                </a>
+                              )}
+                              {receipt.excel_url && (
+                                <a 
+                                  href={receipt.excel_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="p-1.5 text-slate-400 hover:text-green-400 hover:bg-green-400/10 rounded transition-colors"
+                                  title="Download Excel"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                </a>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <Link 
+                              href={`/receipts/${receipt.id}`}
+                              className="text-blue-400 hover:text-blue-300 text-xs font-medium hover:underline"
+                            >
+                              Details
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
-        <ReceiptTable receipts={receipts} />
-      </div>
+      </main>
     </div>
   );
 }
