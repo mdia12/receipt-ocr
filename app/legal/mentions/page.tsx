@@ -10,7 +10,7 @@ export default function MentionsPage() {
           <section className="space-y-2">
             <h2 className="text-xl font-semibold text-white">1. Éditeur du site</h2>
             <p>
-              Le site Receipt OCR est édité par la société [Nom de votre société], SAS au capital de [Montant] €, immatriculée au Registre du Commerce et des Sociétés de [Ville] sous le numéro [Numéro SIREN].
+              Le site NovaReceipt est édité par la société [Nom de votre société], SAS au capital de [Montant] €, immatriculée au Registre du Commerce et des Sociétés de [Ville] sous le numéro [Numéro SIREN].
             </p>
             <p>
               Siège social : [Adresse complète]<br />
@@ -38,7 +38,7 @@ export default function MentionsPage() {
           <section className="space-y-2">
             <h2 className="text-xl font-semibold text-white">4. Contact</h2>
             <p>
-              Pour toute question, vous pouvez nous contacter à l'adresse suivante : contact@receipt-ocr.com
+              Pour toute question, vous pouvez nous contacter à l'adresse suivante : contact@novareceipt.com
             </p>
           </section>
         </div>

@@ -26,7 +26,7 @@ export default function PrivacyPage() {
               <h2 className="text-2xl font-bold text-white">Intelligence Artificielle Souveraine & Sécurisée</h2>
               <div className="space-y-4 text-slate-300 leading-relaxed">
                 <p>
-                  Chez Receipt OCR, nous avons fait le choix de la souveraineté numérique. L'analyse de vos documents est effectuée exclusivement par des modèles d'intelligence artificielle français, développés par <strong>Mistral AI</strong>.
+                  Chez NovaReceipt, nous avons fait le choix de la souveraineté numérique. L'analyse de vos documents est effectuée exclusivement par des modèles d'intelligence artificielle français, développés par <strong>Mistral AI</strong>.
                 </p>
                 <p>
                   Contrairement à d'autres solutions qui envoient vos données vers des serveurs tiers non-européens, notre infrastructure garantit que vos documents sensibles restent sous la protection des réglementations européennes les plus strictes (RGPD).
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
               <h3 className="text-lg font-semibold text-white">Confidentialité Totale</h3>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed">
-              Personne chez Receipt OCR n'a accès au contenu de vos documents. L'extraction est entièrement automatisée. Vous gardez le contrôle total : suppression définitive de vos données possible à tout moment depuis votre espace.
+              Personne chez NovaReceipt n'a accès au contenu de vos documents. L'extraction est entièrement automatisée. Vous gardez le contrôle total : suppression définitive de vos données possible à tout moment depuis votre espace.
             </p>
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function PrivacyPage() {
 
           <h3>3. Vos droits (RGPD)</h3>
           <p>
-            Conformément au Règlement Général sur la Protection des Données, vous disposez d'un droit d'accès, de rectification, et de suppression de vos données. Pour exercer ces droits, contactez-nous à privacy@receipt-ocr.com.
+            Conformément au Règlement Général sur la Protection des Données, vous disposez d'un droit d'accès, de rectification, et de suppression de vos données. Pour exercer ces droits, contactez-nous à privacy@novareceipt.com.
           </p>
         </div>
 

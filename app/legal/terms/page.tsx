@@ -8,12 +8,12 @@ export default function TermsPage() {
         
         <div className="prose prose-invert prose-slate max-w-none">
           <p className="lead">
-            En utilisant le service Receipt OCR, vous acceptez sans réserve les présentes Conditions Générales d'Utilisation.
+            En utilisant le service NovaReceipt, vous acceptez sans réserve les présentes Conditions Générales d'Utilisation.
           </p>
 
           <h3>1. Description du service</h3>
           <p>
-            Receipt OCR est un service SaaS permettant l'extraction automatique de données à partir de reçus et factures (images ou PDF) grâce à l'intelligence artificielle.
+            NovaReceipt est un service SaaS permettant l'extraction automatique de données à partir de reçus et factures (images ou PDF) grâce à l'intelligence artificielle.
           </p>
 
           <h3>2. Accès au service</h3>
@@ -23,7 +23,7 @@ export default function TermsPage() {
 
           <h3>3. Responsabilité</h3>
           <p>
-            Bien que nous utilisions des technologies avancées (IA), nous ne pouvons garantir une exactitude à 100% de l'extraction des données. Il appartient à l'utilisateur de vérifier les informations extraites avant de les utiliser à des fins comptables ou fiscales. Receipt OCR ne saurait être tenu responsable des erreurs d'extraction.
+            Bien que nous utilisions des technologies avancées (IA), nous ne pouvons garantir une exactitude à 100% de l'extraction des données. Il appartient à l'utilisateur de vérifier les informations extraites avant de les utiliser à des fins comptables ou fiscales. NovaReceipt ne saurait être tenu responsable des erreurs d'extraction.
           </p>
 
           <h3>4. Données personnelles</h3>

@@ -48,7 +48,7 @@ export default function ApiDocsPage() {
                 <h2 className="text-2xl font-bold text-slate-900">Introduction</h2>
               </div>
               <p className="text-slate-600 leading-relaxed">
-                Welcome to the Receipt OCR SaaS API documentation. Our platform provides a robust solution for extracting structured data from invoices, receipts, and financial documents using advanced OCR and AI technologies.
+                Welcome to the NovaReceipt API documentation. Our platform provides a robust solution for extracting structured data from invoices, receipts, and financial documents using advanced OCR and AI technologies.
               </p>
               <p className="text-slate-600 leading-relaxed">
                 The system is built on a modern stack including <strong>Next.js 15+</strong>, <strong>Supabase</strong>, and <strong>FastAPI</strong>, leveraging <strong>Mistral AI</strong> for intelligent parsing.
@@ -235,7 +235,7 @@ export default function ApiDocsPage() {
                 <h3 className="text-sm font-bold text-slate-500 uppercase">JavaScript (Fetch)</h3>
                 <div className="bg-slate-900 rounded-lg p-4 overflow-x-auto">
                   <pre className="text-sm text-blue-300 font-mono">
-{`const response = await fetch('https://api.receipt-ocr.com/api/documents', {
+{`const response = await fetch('https://api.novareceipt.com/api/documents', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer ' + token,
@@ -259,7 +259,7 @@ headers = {
 }
 
 response = requests.post(
-    "https://api.receipt-ocr.com/api/documents",
+    "https://api.novareceipt.com/api/documents",
     headers=headers,
     json={"file_url": url}
 )

@@ -111,7 +111,7 @@ export default function DashboardPage() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <FileText className="w-5 h-5 text-white" />
             </div>
-            ReceiptOCR
+            NovaReceipt
           </div>
         </div>
         
@@ -215,7 +215,7 @@ export default function DashboardPage() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <FileText className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-slate-900">ReceiptOCR</span>
+            <span className="font-bold text-slate-900">NovaReceipt</span>
           </div>
           
           <div className="hidden md:flex items-center gap-2 text-sm text-slate-500">
