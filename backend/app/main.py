@@ -29,22 +29,25 @@ if encoded_key:
 
 app = FastAPI(
     title="NovaReceipt API",
-    root_path="/api/py" if os.environ.get("VERCEL") else os.getenv("FASTAPI_ROOT_PATH", "")
+    # Remove root_path setting to avoid confusion with manual middleware stripping
+    # root_path="/api/py" if os.environ.get("VERCEL") else os.getenv("FASTAPI_ROOT_PATH", "")
 )
 
 @app.middleware("http")
 async def strip_api_prefix(request: Request, call_next):
     """
     Middleware to strip the /api/py prefix from the request path if present.
-    This is necessary because Vercel passes the full path to the application,
-    but FastAPI expects the path relative to the root.
     """
     path = request.url.path
+    # Log path for debugging (will show in Vercel logs)
+    print(f"Incoming path: {path}, Method: {request.method}")
+    
     if path.startswith("/api/py"):
         new_path = path[len("/api/py"):]
         if not new_path.startswith("/"):
             new_path = "/" + new_path
         request.scope["path"] = new_path
+        print(f"Rewritten path: {new_path}")
     
     response = await call_next(request)
     return response
