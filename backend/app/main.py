@@ -27,7 +27,7 @@ if encoded_key:
 
 app = FastAPI(
     title="NovaReceipt API",
-    root_path=os.getenv("FASTAPI_ROOT_PATH", "")
+    root_path="/api/py" if os.environ.get("VERCEL") else os.getenv("FASTAPI_ROOT_PATH", "")
 )
 
 app.add_middleware(

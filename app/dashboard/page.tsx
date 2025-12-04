@@ -34,7 +34,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/py/receipts");
+        const res = await fetch("/api/receipts");
         if (!res.ok) throw new Error("Failed to fetch receipts");
         
         const data = await res.json();
