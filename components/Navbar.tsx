@@ -2,10 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight, LayoutDashboard, LogOut } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
-export default function Navbar() {
+export default function Navbar({ user }: { user?: any }) {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.refresh();
+  };
 
   return (
     <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
@@ -31,19 +40,40 @@ export default function Navbar() {
 
         {/* CTA Button (Desktop) */}
         <div className="hidden md:flex items-center gap-4">
-          <Link 
-            href="/login?view=login" 
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-          >
-            Connexion
-          </Link>
-          <Link 
-            href="/login?view=signup" 
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-blue-500/20"
-          >
-            Inscription
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          {user ? (
+            <>
+              <Link 
+                href="/dashboard" 
+                className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Déconnexion
+              </button>
+            </>
+          ) : (
+            <>
+              <Link 
+                href="/login?view=login" 
+                className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                Connexion
+              </Link>
+              <Link 
+                href="/login?view=signup" 
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-blue-500/20"
+              >
+                Inscription
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -89,20 +119,45 @@ export default function Navbar() {
                 FAQ
               </Link>
               <div className="h-px bg-slate-100 my-2"></div>
-              <Link 
-                href="/login?view=login" 
-                className="px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors text-center"
-                onClick={() => setIsOpen(false)}
-              >
-                Connexion
-              </Link>
-              <Link 
-                href="/login?view=signup" 
-                className="px-4 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-colors text-center"
-                onClick={() => setIsOpen(false)}
-              >
-                Inscription
-              </Link>
+              {user ? (
+                <>
+                  <Link 
+                    href="/dashboard" 
+                    className="px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors text-center flex items-center justify-center gap-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Dashboard
+                  </Link>
+                  <button 
+                    onClick={() => {
+                      handleSignOut();
+                      setIsOpen(false);
+                    }}
+                    className="px-4 py-3 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg font-medium transition-colors text-center flex items-center justify-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Déconnexion
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link 
+                    href="/login?view=login" 
+                    className="px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors text-center"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Connexion
+                  </Link>
+                  <Link 
+                    href="/login?view=signup" 
+                    className="px-4 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-colors text-center"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Inscription
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         )}
