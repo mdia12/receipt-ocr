@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { 
   FileText, 
   Download, 
@@ -100,6 +102,45 @@ export default function DashboardPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(20);
+    doc.text("NovaReceipt Report", 14, 22);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, 14, 30);
+    
+    // Add summary
+    doc.text(`Total Expenses: ${totalAmount.toFixed(2)} EUR`, 14, 38);
+    doc.text(`Total Receipts: ${filteredReceipts.length}`, 14, 44);
+
+    // Define columns
+    const tableColumn = ["Date", "Merchant", "Category", "Amount", "Currency"];
+    const tableRows = filteredReceipts.map(receipt => [
+      receipt.date || "N/A",
+      receipt.merchant,
+      receipt.category,
+      receipt.amount_total?.toFixed(2) || "0.00",
+      receipt.currency
+    ]);
+
+    // Generate table
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 50,
+      theme: 'grid',
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [37, 99, 235] }, // Blue-600
+      alternateRowStyles: { fillColor: [248, 250, 252] } // Slate-50
+    });
+
+    doc.save("novareceipt_report.pdf");
   };
 
   return (
@@ -244,6 +285,13 @@ export default function DashboardPage() {
                 <p className="text-slate-500 text-sm mt-1">Track your expenses and manage receipts.</p>
               </div>
               <div className="flex gap-3">
+                <button 
+                  onClick={exportPDF}
+                  className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors shadow-sm"
+                >
+                  <FileText className="w-4 h-4" />
+                  Export PDF
+                </button>
                 <button 
                   onClick={exportCSV}
                   className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors shadow-sm"
