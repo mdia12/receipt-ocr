@@ -41,7 +41,7 @@ export default function Home() {
               ))}
             </div>
             <p className="text-sm font-medium text-slate-700">
-              Satisfaction maximale de nos premiers utilisateurs
+              Premiers clients satisfaits
             </p>
           </div>
         </div>
