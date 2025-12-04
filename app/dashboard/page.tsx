@@ -9,85 +9,16 @@ import FiltersBar from "@/components/dashboard/FiltersBar";
 import ReceiptsTable from "@/components/dashboard/ReceiptsTable";
 import ReceiptDrawer from "@/components/dashboard/ReceiptDrawer";
 
-// --- MOCK DATA ---
-const MOCK_RECEIPTS: Receipt[] = [
-  {
-    id: "REC-001",
-    userId: "user_123",
-    date: "2025-12-04T10:30:00Z",
-    merchant: "Uber",
-    category: "TRANSPORT",
-    amount: 24.50,
-    currency: "EUR",
-    status: "success",
-    fileUrl: "https://placehold.co/400x600/png?text=Receipt+Uber",
-    createdAt: "2025-12-04T10:35:00Z",
-    items: [{ description: "Course UberX", amount: 24.50 }]
-  },
-  {
-    id: "REC-002",
-    userId: "user_123",
-    date: "2025-12-03T19:15:00Z",
-    merchant: "Restaurant Le Petit Zinc",
-    category: "RESTAURANT",
-    amount: 85.00,
-    currency: "EUR",
-    status: "success",
-    fileUrl: "https://placehold.co/400x600/png?text=Receipt+Restaurant",
-    createdAt: "2025-12-03T20:00:00Z",
-    items: [{ description: "Menu Dîner", amount: 85.00 }]
-  },
-  {
-    id: "REC-003",
-    userId: "user_123",
-    date: "2025-12-01T09:00:00Z",
-    merchant: "Apple Store",
-    category: "AUTRE",
-    amount: 1299.00,
-    currency: "EUR",
-    status: "partial",
-    fileUrl: "https://placehold.co/400x600/png?text=Receipt+Apple",
-    createdAt: "2025-12-01T09:30:00Z",
-    items: [{ description: "MacBook Air", amount: 1299.00 }]
-  },
-  {
-    id: "REC-004",
-    userId: "user_123",
-    date: "2025-11-28T14:20:00Z",
-    merchant: "Station Shell",
-    category: "ESSENCE",
-    amount: 65.40,
-    currency: "EUR",
-    status: "success",
-    fileUrl: "https://placehold.co/400x600/png?text=Receipt+Shell",
-    createdAt: "2025-11-28T14:25:00Z"
-  },
-  {
-    id: "REC-005",
-    userId: "user_123",
-    date: "2025-11-25T08:45:00Z",
-    merchant: "Starbucks",
-    category: "RESTAURANT",
-    amount: 12.50,
-    currency: "EUR",
-    status: "failed",
-    fileUrl: "https://placehold.co/400x600/png?text=Receipt+Starbucks",
-    createdAt: "2025-11-25T08:50:00Z"
-  }
-];
-
-const MOCK_STATS: DashboardStats = {
-  totalExpenses: 1486.40,
-  totalReceipts: 142,
-  topCategory: "RESTAURANT",
-  scansThisMonth: 12,
-  planLimit: 50
-};
-
 export default function DashboardPage() {
   // State
   const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [stats, setStats] = useState<DashboardStats>(MOCK_STATS);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalExpenses: 0,
+    totalReceipts: 0,
+    topCategory: "N/A",
+    scansThisMonth: 0,
+    planLimit: 50
+  });
   const [loading, setLoading] = useState(true);
   
   // Filters State
@@ -99,13 +30,64 @@ export default function DashboardPage() {
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  // Fetch Data (Simulated)
+  // Fetch Data
   useEffect(() => {
     const fetchData = async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setReceipts(MOCK_RECEIPTS);
-      setLoading(false);
+      try {
+        const res = await fetch("/api/py/receipts");
+        if (!res.ok) throw new Error("Failed to fetch receipts");
+        
+        const data = await res.json();
+        
+        // Map backend data to frontend Receipt type
+        const mappedReceipts: Receipt[] = data.map((item: any) => ({
+          id: item.id,
+          userId: "current_user",
+          date: item.date || item.created_at,
+          merchant: item.merchant || "Inconnu",
+          category: item.category || "AUTRE",
+          amount: item.amount_total || 0,
+          currency: item.currency || "EUR",
+          status: "success",
+          fileUrl: item.pdf_url || item.excel_url || "",
+          createdAt: item.created_at,
+          items: []
+        }));
+
+        setReceipts(mappedReceipts);
+
+        // Calculate Stats
+        const totalExpenses = mappedReceipts.reduce((sum, r) => sum + r.amount, 0);
+        const totalReceipts = mappedReceipts.length;
+        
+        // Calculate Top Category
+        const categoryCounts: Record<string, number> = {};
+        mappedReceipts.forEach(r => {
+          const cat = r.category || "AUTRE";
+          categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+        });
+        const topCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+
+        // Calculate Scans This Month
+        const now = new Date();
+        const scansThisMonth = mappedReceipts.filter(r => {
+          const d = new Date(r.createdAt);
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        }).length;
+
+        setStats({
+          totalExpenses,
+          totalReceipts,
+          topCategory,
+          scansThisMonth,
+          planLimit: 50
+        });
+
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, []);
