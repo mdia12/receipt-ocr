@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import Link from "next/link";
+import Footer from "@/components/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,30 +22,11 @@ export default function RootLayout({
         <Navbar />
 
         {/* Main Content */}
-        <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-8 md:py-12">
+        <main className="flex-1 w-full">
           {children}
         </main>
 
-        {/* Footer */}
-        <footer className="border-t border-slate-200 py-8 mt-auto">
-          <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-            <p>&copy; {new Date().getFullYear()} NovaReceipt. Tous droits réservés.</p>
-            <div className="flex gap-4 flex-wrap justify-center md:justify-end">
-              <Link href="/legal/mentions" className="text-slate-400 hover:text-blue-600 hover:underline transition-colors">
-                Mentions Légales
-              </Link>
-              <Link href="/legal/privacy" className="text-slate-400 hover:text-blue-600 hover:underline transition-colors">
-                Politique de Confidentialité
-              </Link>
-              <Link href="/legal/terms" className="text-slate-400 hover:text-blue-600 hover:underline transition-colors">
-                Conditions Générales
-              </Link>
-              <Link href="/api-docs" className="text-slate-400 hover:text-blue-600 hover:underline transition-colors">
-                API Documentation
-              </Link>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </body>
     </html>
   );
