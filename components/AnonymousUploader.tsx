@@ -29,14 +29,15 @@ export default function AnonymousUploader() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("/api/ocr/anonymous", {
+      // Use the direct API path which is handled by Next.js rewrites (dev) or Vercel routes (prod)
+      const res = await fetch("/api/py/anonymous/scan", {
         method: "POST",
         body: formData,
       });
 
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Failed to process receipt");
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Upload failed with status ${res.status}`);
       }
 
       const data = await res.json();
