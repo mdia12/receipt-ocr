@@ -27,6 +27,17 @@ export async function POST(request: Request) {
       : "/api/py/anonymous/scan";
       
     const apiUrl = `${backendUrl}${targetPath}`;
+    console.log("Proxying to:", apiUrl);
+
+    // Forward headers to pass Vercel Authentication / Deployment Protection
+    const headers = new Headers();
+    request.headers.forEach((value, key) => {
+      const lowerKey = key.toLowerCase();
+      // Forward cookies and auth, but skip host/content-length/content-type
+      if (!['host', 'content-length', 'content-type', 'connection'].includes(lowerKey)) {
+        headers.set(key, value);
+      }
+    });
 
     // Forward to Python Backend
     const backendFormData = new FormData();
@@ -34,6 +45,7 @@ export async function POST(request: Request) {
 
     const res = await fetch(apiUrl, {
       method: "POST",
+      headers: headers,
       body: backendFormData,
     });
 
