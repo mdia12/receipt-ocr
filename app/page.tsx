@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Zap, FileSpreadsheet, Briefcase } from "lucide-react";
+import { Zap, FileSpreadsheet, Briefcase, Star } from "lucide-react";
 import UploadArea from "@/components/UploadArea";
 
 export default function Home() {
@@ -22,6 +22,29 @@ export default function Home() {
           Automatisez vos reçus & factures <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">en quelques secondes</span>
         </h1>
+
+        <div className="flex items-center justify-center gap-4 py-2">
+          <div className="flex -space-x-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <img
+                key={i}
+                className="inline-block h-10 w-10 rounded-full ring-2 ring-white object-cover"
+                src={`https://i.pravatar.cc/100?img=${i + 10}`}
+                alt={`User ${i}`}
+              />
+            ))}
+          </div>
+          <div className="flex flex-col items-start">
+            <div className="flex gap-0.5">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              ))}
+            </div>
+            <p className="text-sm font-medium text-slate-700">
+              Satisfaction maximale de nos premiers utilisateurs
+            </p>
+          </div>
+        </div>
         
         <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
           Fini la saisie manuelle. NovaReceipt extrait instantanément les données et génère un Excel pour votre comptable.
