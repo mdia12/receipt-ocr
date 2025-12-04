@@ -32,11 +32,10 @@ export default function Navbar() {
         {/* CTA Button (Desktop) */}
         <div className="hidden md:block">
           <Link 
-            href="/" 
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-blue-500/20"
+            href="/login" 
+            className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
           >
-            Essayer gratuitement
-            <ArrowRight className="w-4 h-4" />
+            Connexion
           </Link>
         </div>
 
@@ -84,11 +83,11 @@ export default function Navbar() {
               </Link>
               <div className="h-px bg-slate-100 my-2"></div>
               <Link 
-                href="/" 
+                href="/login" 
                 className="px-4 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-colors text-center"
                 onClick={() => setIsOpen(false)}
               >
-                Essayer gratuitement
+                Connexion
               </Link>
             </nav>
           </div>

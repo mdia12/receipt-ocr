@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { login, signup } from "./actions";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle2, Eye, EyeOff, Star } from "lucide-react";
+import Image from "next/image";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -40,32 +42,145 @@ export default function LoginPage() {
       setError(result.error);
       setLoading(false);
     }
-    // If success, the action redirects, so we don't need to do anything here
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl border border-slate-200 shadow-xl">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-slate-900">
-            {isSignUp ? "Créer un compte" : "Connexion"}
-          </h2>
-          <p className="text-slate-600 mt-2">
-            Accédez à votre espace NovaReceipt
-          </p>
-        </div>
+    <div className="min-h-[calc(100vh-4rem)] bg-slate-50 flex items-center justify-center p-4 md:p-8">
+      <div className="max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center">
         
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-            {error}
+        {/* Left Side - Marketing */}
+        <div className="hidden md:block space-y-8">
+          <h1 className="text-4xl font-bold text-slate-900 leading-tight">
+            Gérez toutes vos notes de frais depuis une seule plateforme.
+          </h1>
+          
+          <div className="space-y-4">
+            {[
+              "Utilisation facile",
+              "Export comptable automatisé",
+              "IA qui capture vos reçus instantanément"
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3 text-lg text-slate-700">
+                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                <span>{item}</span>
+              </div>
+            ))}
           </div>
-        )}
 
-        <div className="space-y-4">
+          <div className="pt-8">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex -space-x-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden">
+                    <img 
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`} 
+                      alt="User avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex text-yellow-400">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} className="w-5 h-5 fill-current" />
+                ))}
+              </div>
+              <span className="text-slate-600 font-medium">Rejoins +1000 utilisateurs</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Form */}
+        <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl border border-slate-100 max-w-md w-full mx-auto">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-slate-900">
+              {isSignUp ? "Inscription gratuite" : "Connexion"}
+            </h2>
+          </div>
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <input
+                name="email"
+                type="email"
+                required
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="vous@exemple.com"
+              />
+            </div>
+            
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-sm font-medium text-slate-700">Mot de passe</label>
+                {isSignUp && <span className="text-xs text-slate-500">Min. 6 caractères</span>}
+              </div>
+              <div className="relative">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  minLength={6}
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            {isSignUp && (
+              <div className="flex items-start gap-3">
+                <input 
+                  type="checkbox" 
+                  id="newsletter" 
+                  className="mt-1 w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="newsletter" className="text-sm text-slate-600">
+                  Recevoir les actualités et offres exclusives
+                </label>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center py-3 px-4 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/20"
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                isSignUp ? "Créer un compte" : "Se connecter"
+              )}
+            </button>
+          </form>
+
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-slate-500">Ou</span>
+            </div>
+          </div>
+
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-700 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -85,65 +200,19 @@ export default function LoginPage() {
                 fill="#EA4335"
               />
             </svg>
-            Continuer avec Google
+            {isSignUp ? "S'inscrire avec Google" : "Se connecter avec Google"}
           </button>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-slate-500">Ou avec email</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-              <input
-                name="email"
-                type="email"
-                required
-                className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="vous@exemple.com"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
-              <input
-                name="password"
-                type="password"
-                required
-                minLength={6}
-                className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="••••••••"
-              />
-            </div>
-
+          <div className="mt-8 text-center text-sm text-slate-600">
+            {isSignUp ? "Déjà inscrit(e) ?" : "Pas encore de compte ?"}
+            {" "}
             <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-[#6366f1] hover:text-[#4f46e5] font-medium hover:underline"
             >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                isSignUp ? "S'inscrire" : "Se connecter"
-              )}
+              {isSignUp ? "Connexion" : "S'inscrire"}
             </button>
-          </form>
-        </div>
-
-        <div className="mt-6 text-center text-sm text-slate-600">
-          {isSignUp ? "Déjà un compte ?" : "Pas encore de compte ?"}
-          {" "}
-          <button
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-blue-600 hover:text-blue-500 font-medium hover:underline"
-          >
-            {isSignUp ? "Se connecter" : "S'inscrire"}
-          </button>
+          </div>
         </div>
       </div>
     </div>
