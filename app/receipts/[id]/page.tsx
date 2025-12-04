@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Download, FileText, Calendar, Store, DollarSign, Tag, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, Download, FileText, Calendar, Store, DollarSign, Tag, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import jsPDF from "jspdf";
@@ -24,6 +24,7 @@ export default function ReceiptPage() {
   const [job, setJob] = useState<JobStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(true);
 
   useEffect(() => {
     if (!id) return;
@@ -212,28 +213,41 @@ export default function ReceiptPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Left Column: Receipt Preview */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[calc(100vh-12rem)] min-h-[600px] sticky top-24">
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+          <div className={`bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col transition-all duration-300 ${
+            showPreview ? "h-[500px] lg:h-[calc(100vh-12rem)] lg:min-h-[600px]" : "h-auto"
+          } lg:sticky lg:top-24`}>
+            <div 
+              className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center cursor-pointer hover:bg-slate-100/50 transition-colors"
+              onClick={() => setShowPreview(!showPreview)}
+            >
               <h2 className="font-semibold text-slate-700 flex items-center gap-2">
                 <FileText className="w-4 h-4" />
                 Aperçu du document
               </h2>
+              <button 
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-200/50 transition-colors"
+              >
+                {showPreview ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
             </div>
-            <div className="flex-1 bg-slate-100 flex items-center justify-center p-4 overflow-auto">
-               {job.file_url ? (
-                 /* eslint-disable-next-line @next/next/no-img-element */
-                 <img 
-                   src={job.file_url} 
-                   alt="Receipt" 
-                   className="max-w-full max-h-full object-contain shadow-lg rounded-lg"
-                 />
-               ) : (
-                 <div className="flex flex-col items-center gap-3 text-slate-400">
-                   <FileText className="w-12 h-12 opacity-50" />
-                   <p>Aperçu non disponible</p>
-                 </div>
-               )}
-            </div>
+            
+            {showPreview && (
+              <div className="flex-1 bg-slate-100 flex items-center justify-center p-4 overflow-auto">
+                 {job.file_url ? (
+                   /* eslint-disable-next-line @next/next/no-img-element */
+                   <img 
+                     src={job.file_url} 
+                     alt="Receipt" 
+                     className="max-w-full max-h-full object-contain shadow-lg rounded-lg"
+                   />
+                 ) : (
+                   <div className="flex flex-col items-center gap-3 text-slate-400">
+                     <FileText className="w-12 h-12 opacity-50" />
+                     <p>Aperçu non disponible</p>
+                   </div>
+                 )}
+              </div>
+            )}
           </div>
 
           {/* Right Column: Extracted Data */}
