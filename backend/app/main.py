@@ -7,6 +7,8 @@ import base64
 # --- Relative Imports ---
 from .config import settings
 from .routers import upload, status, receipts
+from app.services.ocr import ocr_service
+from app.services.llm_parser import llm_parser_service
 # ------------------------
 
 # --- Google Cloud Credentials Setup for Render ---
@@ -47,13 +49,32 @@ app.include_router(receipts.router, tags=["Receipts"])
 def root():
     return {"status": "backend running"}
 
-# Initialize Google Vision Client (Global for simple endpoint)
-try:
-    # This must happen AFTER the credential setup above
-    vision_client = vision.ImageAnnotatorClient()
-except Exception as e:
-    print(f"Warning: Could not initialize global Vision client: {e}")
-    vision_client = None
+@app.post("/anonymous/scan")
+async def anonymous_scan(file: UploadFile = File(...)):
+    """
+    Anonymous OCR scan endpoint.
+    - Receives file
+    - Performs OCR (Google Vision)
+    - Parses with LLM (OpenAI)
+    - Returns structured JSON
+    - NO DB Storage
+    """
+    try:
+        content = await file.read()
+        
+        # 1. OCR
+        text = ocr_service.extract_text_from_image(content)
+        if not text:
+             return {"error": "No text detected in image"}
+        
+        # 2. LLM Parsing
+        receipt_data = llm_parser_service.parse_receipt_with_llm(text)
+        
+        # 3. Return Data (No DB save)
+        return receipt_data
+    except Exception as e:
+        print(f"Anonymous Scan Error: {e}")
+        return {"error": str(e)}
 
 @app.post("/ocr")
 async def ocr_receipt(file: UploadFile = File(...)):

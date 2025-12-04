@@ -1,12 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Zap, FileSpreadsheet, Briefcase, Star } from "lucide-react";
-import UploadArea from "@/components/UploadArea";
+import AnonymousUploader from "@/components/AnonymousUploader";
 
 export default function Home() {
-  const router = useRouter();
-
   return (
     <div className="flex flex-col items-center pb-20 relative overflow-hidden">
       
@@ -54,10 +51,7 @@ export default function Home() {
         <div className="w-full max-w-3xl mx-auto pt-6 relative z-10">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-violet-500 rounded-2xl blur opacity-20 animate-pulse"></div>
           <div className="relative bg-white/80 backdrop-blur-xl rounded-xl border border-white/20 shadow-2xl shadow-blue-500/10 p-2">
-            <div className="bg-white/50 rounded-lg p-6 md:p-8 border border-slate-100 text-center">
-              <h3 className="text-base font-semibold text-slate-700 mb-4">Déposez un reçu (JPG, PNG, PDF) pour voir un exemple d’extraction.</h3>
-              <UploadArea onUploadSuccess={(jobId) => router.push(`/receipts/${jobId}`)} />
-            </div>
+             <AnonymousUploader />
           </div>
         </div>
 
