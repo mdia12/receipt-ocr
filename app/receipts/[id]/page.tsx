@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ArrowLeft, Download, FileText, Calendar, Store, DollarSign, Tag, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface JobStatus {
   job_id: string;
@@ -92,6 +94,57 @@ export default function ReceiptPage() {
   const isError = job.status === "error";
   const data = job.receipt_data || {};
 
+  const downloadPDF = () => {
+    if (!job || !job.receipt_data) return;
+    const data = job.receipt_data;
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(20);
+    doc.text("Détails du Reçu", 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`ID: ${job.job_id}`, 14, 30);
+    doc.text(`Date d'extraction: ${new Date().toLocaleDateString()}`, 14, 35);
+
+    // Main Info
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    
+    let y = 50;
+    doc.text(`Commerçant: ${data.merchant || "N/A"}`, 14, y);
+    y += 10;
+    doc.text(`Date: ${data.date || "N/A"}`, 14, y);
+    y += 10;
+    doc.text(`Catégorie: ${data.category || "N/A"}`, 14, y);
+    y += 10;
+    doc.text(`Montant Total: ${data.amount_total?.toFixed(2) || "0.00"} ${data.currency || "EUR"}`, 14, y);
+    y += 20;
+
+    // Items
+    if (data.items && data.items.length > 0) {
+      doc.text("Articles:", 14, y);
+      y += 5;
+      
+      const tableColumn = ["Description", "Montant"];
+      const tableRows = data.items.map((item: any) => [
+        item.description,
+        (item.amount?.toFixed(2) || "0.00")
+      ]);
+
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: y,
+        theme: 'grid',
+        headStyles: { fillColor: [37, 99, 235] },
+      });
+    }
+
+    doc.save(`recu_${data.merchant || "inconnu"}_${data.date || "date"}.pdf`);
+  };
+
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -124,6 +177,13 @@ export default function ReceiptPage() {
           </div>
           
           <div className="flex gap-3">
+            <button 
+              onClick={downloadPDF}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors"
+            >
+              <FileText className="w-4 h-4" />
+              Télécharger PDF
+            </button>
             {job.pdf_url && (
               <a 
                 href={job.pdf_url} 
