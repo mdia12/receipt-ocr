@@ -64,10 +64,16 @@ async def process_receipt_job(job_id: str, file_bytes: bytes, file_ext: str):
         traceback.print_exc()
         jobs_service.mark_job_error(job_id, str(e))
 
+from typing import Optional
+from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks, Form
+
+# ... imports ...
+
 @router.post("/upload")
 async def upload_receipt(
     background_tasks: BackgroundTasks,
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    user_id: Optional[str] = Form(None)
 ):
     storage_service = get_storage_service()
     if not file:
@@ -89,7 +95,7 @@ async def upload_receipt(
         )
         
         # 2. Create Job
-        jobs_service.create_job(job_id, raw_url)
+        jobs_service.create_job(job_id, raw_url, user_id=user_id)
         
         # 3. Trigger Processing in Background
         background_tasks.add_task(process_receipt_job, job_id, file_bytes, file_ext)

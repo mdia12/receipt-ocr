@@ -5,11 +5,11 @@ from typing import List, Optional
 router = APIRouter()
 
 @router.get("/receipts")
-async def list_receipts(limit: int = 50):
+async def list_receipts(limit: int = 50, user_id: Optional[str] = None):
     """
     List all processed receipts.
     """
-    jobs = jobs_service.get_all_jobs(limit=limit)
+    jobs = jobs_service.get_all_jobs(limit=limit, user_id=user_id)
     
     results = []
     for job in jobs:

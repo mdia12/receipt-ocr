@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    }
+
+    if (user) {
+      formData.append("user_id", user.id);
     }
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
 
 export async function GET() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -7,7 +8,15 @@ export async function GET() {
   }
 
   try {
-    const backendResponse = await fetch(`${apiUrl}/receipts?limit=100`, {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let url = `${apiUrl}/receipts?limit=100`;
+    if (user) {
+      url += `&user_id=${user.id}`;
+    }
+
+    const backendResponse = await fetch(url, {
       cache: "no-store"
     });
 
