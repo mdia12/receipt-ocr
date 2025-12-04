@@ -127,7 +127,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-8 font-sans text-slate-900 dark:text-slate-50 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 p-6 md:p-8 font-sans text-slate-900">
       <div className="max-w-7xl mx-auto">
         
         <DashboardHeader onExport={handleExport} />

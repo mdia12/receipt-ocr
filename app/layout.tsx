@@ -4,7 +4,6 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { createClient } from "@/utils/supabase/server";
-import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,22 +22,15 @@ export default async function RootLayout({
 
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={`${inter.className} bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 antialiased min-h-screen flex flex-col`} suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Navbar user={user} />
+      <body className={`${inter.className} bg-white text-slate-900 antialiased min-h-screen flex flex-col`} suppressHydrationWarning>
+        <Navbar user={user} />
 
-          {/* Main Content */}
-          <main className="flex-1 w-full">
-            {children}
-          </main>
+        {/* Main Content */}
+        <main className="flex-1 w-full">
+          {children}
+        </main>
 
-          <Footer />
-        </ThemeProvider>
+        <Footer />
       </body>
     </html>
   );
