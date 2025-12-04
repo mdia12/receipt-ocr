@@ -14,6 +14,9 @@ export default function Footer() {
           <Link href="/legal/mentions" className="hover:text-blue-600 hover:underline transition-colors">
             Mentions Légales
           </Link>
+          <Link href="/docs/api" className="hover:text-blue-600 hover:underline transition-colors">
+            API Documentation
+          </Link>
           <Link href="/legal/privacy" className="hover:text-blue-600 hover:underline transition-colors">
             Politique de Confidentialité
           </Link>
