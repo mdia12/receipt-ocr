@@ -27,8 +27,11 @@ export default function RootLayout({
 
         {/* Footer */}
         <footer className="border-t border-slate-200 py-8 mt-auto">
-          <div className="max-w-5xl mx-auto px-4 text-center text-slate-500 text-sm">
+          <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
             <p>&copy; {new Date().getFullYear()} NovaReceipt. Tous droits réservés.</p>
+            <a href="/api-docs" className="text-slate-400 hover:text-blue-600 hover:underline transition-colors">
+              API Documentation
+            </a>
           </div>
         </footer>
       </body>

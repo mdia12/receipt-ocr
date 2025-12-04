@@ -1,5 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
-from app.services.storage import storage_service
+from app.services.storage import get_storage_service
 from app.services.jobs import jobs_service
 from app.services.ocr import ocr_service
 from app.services.llm_parser import llm_parser_service
@@ -13,6 +13,7 @@ import hashlib
 router = APIRouter()
 
 async def process_receipt_job(job_id: str, file_bytes: bytes, file_ext: str):
+    storage_service = get_storage_service()
     try:
         # Calculate checksum for debug
         file_hash = hashlib.md5(file_bytes).hexdigest()
@@ -68,6 +69,7 @@ async def upload_receipt(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...)
 ):
+    storage_service = get_storage_service()
     if not file:
         raise HTTPException(status_code=400, detail="No file uploaded")
 
