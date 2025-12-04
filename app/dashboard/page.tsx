@@ -145,7 +145,10 @@ export default function DashboardPage() {
           </a>
         </nav>
 
-        <div className="p-4 border-t border-slate-200 relative">
+        <div 
+          className="p-4 border-t border-slate-200 relative"
+          onMouseLeave={() => setIsMenuOpen(false)}
+        >
           {isMenuOpen && (
             <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-50">
               <div className="p-4 border-b border-slate-100">
@@ -231,8 +234,8 @@ export default function DashboardPage() {
         </header>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50">
-          <div className="max-w-6xl mx-auto space-y-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50">
+          <div className="max-w-6xl mx-auto space-y-6">
             
             {/* Page Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -259,7 +262,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Stats Cards - Qonto Style */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white border border-slate-200 p-6 rounded-xl hover:border-slate-300 transition-colors shadow-sm">
                 <div className="flex justify-between items-start mb-4">
                   <div className="p-2 bg-blue-50 rounded-lg">
@@ -341,12 +344,12 @@ export default function DashboardPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
                     <tr>
-                      <th className="px-6 py-4 font-medium w-32">Date</th>
-                      <th className="px-6 py-4 font-medium">Merchant</th>
-                      <th className="px-6 py-4 font-medium">Category</th>
-                      <th className="px-6 py-4 font-medium text-right">Amount</th>
-                      <th className="px-6 py-4 font-medium text-center">Files</th>
-                      <th className="px-6 py-4 font-medium text-right">Actions</th>
+                      <th className="px-6 py-3 font-medium w-32">Date</th>
+                      <th className="px-6 py-3 font-medium">Merchant</th>
+                      <th className="px-6 py-3 font-medium">Category</th>
+                      <th className="px-6 py-3 font-medium text-right">Amount</th>
+                      <th className="px-6 py-3 font-medium text-center">Files</th>
+                      <th className="px-6 py-3 font-medium text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
@@ -368,21 +371,21 @@ export default function DashboardPage() {
                     ) : (
                       filteredReceipts.map((receipt) => (
                         <tr key={receipt.id} className="hover:bg-slate-50 transition-colors group">
-                          <td className="px-6 py-4 text-slate-500 whitespace-nowrap font-mono text-xs">
+                          <td className="px-6 py-3 text-slate-500 whitespace-nowrap font-mono text-xs">
                             {receipt.date || "N/A"}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-3">
                             <div className="font-medium text-slate-900">{receipt.merchant}</div>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-3">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
                               {receipt.category}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-right font-mono font-medium text-slate-900">
+                          <td className="px-6 py-3 text-right font-mono font-medium text-slate-900">
                             -{receipt.amount_total?.toFixed(2)} {receipt.currency}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-3">
                             <div className="flex justify-center gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
                               {receipt.pdf_url && (
                                 <a 
@@ -408,7 +411,7 @@ export default function DashboardPage() {
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-right">
+                          <td className="px-6 py-3 text-right">
                             <Link 
                               href={`/receipts/${receipt.id}`}
                               className="text-blue-600 hover:text-blue-700 text-xs font-medium hover:underline"
