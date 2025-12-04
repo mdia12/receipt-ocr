@@ -66,6 +66,14 @@ app.include_router(receipts.router, tags=["Receipts"])
 def root():
     return {"status": "backend running"}
 
+# Initialize Google Vision Client (Global for simple endpoint)
+try:
+    # This must happen AFTER the credential setup above
+    vision_client = vision.ImageAnnotatorClient()
+except Exception as e:
+    print(f"Warning: Could not initialize global Vision client: {e}")
+    vision_client = None
+
 @app.post("/anonymous/scan")
 async def anonymous_scan(file: UploadFile = File(...)):
     """
