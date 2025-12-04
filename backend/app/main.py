@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import vision
 import os
@@ -31,6 +31,23 @@ app = FastAPI(
     title="NovaReceipt API",
     root_path="/api/py" if os.environ.get("VERCEL") else os.getenv("FASTAPI_ROOT_PATH", "")
 )
+
+@app.middleware("http")
+async def strip_api_prefix(request: Request, call_next):
+    """
+    Middleware to strip the /api/py prefix from the request path if present.
+    This is necessary because Vercel passes the full path to the application,
+    but FastAPI expects the path relative to the root.
+    """
+    path = request.url.path
+    if path.startswith("/api/py"):
+        new_path = path[len("/api/py"):]
+        if not new_path.startswith("/"):
+            new_path = "/" + new_path
+        request.scope["path"] = new_path
+    
+    response = await call_next(request)
+    return response
 
 app.add_middleware(
     CORSMiddleware,
