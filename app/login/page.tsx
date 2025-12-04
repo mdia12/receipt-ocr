@@ -1,16 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { login, signup } from "./actions";
 import { Loader2, CheckCircle2, Eye, EyeOff, Star } from "lucide-react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSignUp, setIsSignUp] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const view = searchParams.get("view");
+    if (view === "login") {
+      setIsSignUp(false);
+    } else if (view === "signup") {
+      setIsSignUp(true);
+    }
+  }, [searchParams]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
