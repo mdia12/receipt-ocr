@@ -1,482 +1,188 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { 
-  FileText, 
-  Download, 
-  Search, 
-  Filter, 
-  ArrowUpRight,
-  Loader2,
-  LayoutDashboard,
-  CreditCard,
-  Settings,
-  LogOut,
-  PieChart,
-  Wallet,
-  Bell,
-  Video,
-  Sparkles,
-  ChevronUp
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Receipt, DashboardStats } from "@/types/receipts";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import KpiCards from "@/components/dashboard/KpiCards";
+import UsageChart from "@/components/dashboard/UsageChart";
+import FiltersBar from "@/components/dashboard/FiltersBar";
+import ReceiptsTable from "@/components/dashboard/ReceiptsTable";
+import ReceiptDrawer from "@/components/dashboard/ReceiptDrawer";
 
-interface Receipt {
-  id: string;
-  created_at: string;
-  merchant: string;
-  date: string;
-  amount_total: number;
-  currency: string;
-  category: string;
-  excel_url: string;
-  pdf_url: string;
-}
+// --- MOCK DATA ---
+const MOCK_RECEIPTS: Receipt[] = [
+  {
+    id: "REC-001",
+    userId: "user_123",
+    date: "2025-12-04T10:30:00Z",
+    merchant: "Uber",
+    category: "TRANSPORT",
+    amount: 24.50,
+    currency: "EUR",
+    status: "success",
+    fileUrl: "https://placehold.co/400x600/png?text=Receipt+Uber",
+    createdAt: "2025-12-04T10:35:00Z",
+    items: [{ description: "Course UberX", amount: 24.50 }]
+  },
+  {
+    id: "REC-002",
+    userId: "user_123",
+    date: "2025-12-03T19:15:00Z",
+    merchant: "Restaurant Le Petit Zinc",
+    category: "RESTAURANT",
+    amount: 85.00,
+    currency: "EUR",
+    status: "success",
+    fileUrl: "https://placehold.co/400x600/png?text=Receipt+Restaurant",
+    createdAt: "2025-12-03T20:00:00Z",
+    items: [{ description: "Menu Dîner", amount: 85.00 }]
+  },
+  {
+    id: "REC-003",
+    userId: "user_123",
+    date: "2025-12-01T09:00:00Z",
+    merchant: "Apple Store",
+    category: "AUTRE",
+    amount: 1299.00,
+    currency: "EUR",
+    status: "partial",
+    fileUrl: "https://placehold.co/400x600/png?text=Receipt+Apple",
+    createdAt: "2025-12-01T09:30:00Z",
+    items: [{ description: "MacBook Air", amount: 1299.00 }]
+  },
+  {
+    id: "REC-004",
+    userId: "user_123",
+    date: "2025-11-28T14:20:00Z",
+    merchant: "Station Shell",
+    category: "ESSENCE",
+    amount: 65.40,
+    currency: "EUR",
+    status: "success",
+    fileUrl: "https://placehold.co/400x600/png?text=Receipt+Shell",
+    createdAt: "2025-11-28T14:25:00Z"
+  },
+  {
+    id: "REC-005",
+    userId: "user_123",
+    date: "2025-11-25T08:45:00Z",
+    merchant: "Starbucks",
+    category: "RESTAURANT",
+    amount: 12.50,
+    currency: "EUR",
+    status: "failed",
+    fileUrl: "https://placehold.co/400x600/png?text=Receipt+Starbucks",
+    createdAt: "2025-11-25T08:50:00Z"
+  }
+];
+
+const MOCK_STATS: DashboardStats = {
+  totalExpenses: 1486.40,
+  totalReceipts: 142,
+  topCategory: "RESTAURANT",
+  scansThisMonth: 12,
+  planLimit: 50
+};
 
 export default function DashboardPage() {
+  // State
   const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [stats, setStats] = useState<DashboardStats>(MOCK_STATS);
   const [loading, setLoading] = useState(true);
+  
+  // Filters State
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
-  const [user, setUser] = useState<any>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const supabase = createClient();
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
+  // Drawer State
+  const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Fetch Data (Simulated)
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+    const fetchData = async () => {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setReceipts(MOCK_RECEIPTS);
+      setLoading(false);
     };
-    getUser();
+    fetchData();
   }, []);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = "/login";
-  };
-
-  useEffect(() => {
-    const fetchReceipts = async () => {
-      try {
-        const res = await fetch("/api/receipts");
-        if (res.ok) {
-          const data = await res.json();
-          setReceipts(data);
-        }
-      } catch (error) {
-        console.error("Failed to load receipts", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchReceipts();
-  }, []);
-
-  const filteredReceipts = receipts.filter((r) => {
+  // Filter Logic
+  const filteredReceipts = receipts.filter(r => {
     const matchesSearch = 
       r.merchant.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (r.category && r.category.toLowerCase().includes(searchTerm.toLowerCase()));
+      r.category.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesCategory = categoryFilter === "ALL" || r.category === categoryFilter;
+    const matchesStatus = statusFilter === "ALL" || r.status === statusFilter;
 
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const totalAmount = filteredReceipts.reduce((sum, r) => sum + (r.amount_total || 0), 0);
-
-  const exportCSV = () => {
-    const headers = ["Date,Merchant,Category,Amount,Currency,Link"];
-    const rows = filteredReceipts.map(r => 
-      `${r.date || ""},"${r.merchant}","${r.category || ""}",${r.amount_total},${r.currency},${window.location.origin}/receipts/${r.id}`
-    );
-    
-    const csvContent = "data:text/csv;charset=utf-8," + headers.concat(rows).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "receipts_export.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // Handlers
+  const handleViewDetails = (receipt: Receipt) => {
+    setSelectedReceipt(receipt);
+    setIsDrawerOpen(true);
   };
 
-  const exportPDF = () => {
-    const doc = new jsPDF();
-    
-    // Add title
-    doc.setFontSize(20);
-    doc.text("NovaReceipt Report", 14, 22);
-    
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text(`Generated on ${new Date().toLocaleDateString()}`, 14, 30);
-    
-    // Add summary
-    doc.text(`Total Expenses: ${totalAmount.toFixed(2)} EUR`, 14, 38);
-    doc.text(`Total Receipts: ${filteredReceipts.length}`, 14, 44);
+  const handleReprocess = (receipt: Receipt) => {
+    console.log("Reprocessing receipt:", receipt.id);
+    // TODO: Call API to reprocess
+  };
 
-    // Define columns
-    const tableColumn = ["Date", "Merchant", "Category", "Amount", "Currency"];
-    const tableRows = filteredReceipts.map(receipt => [
-      receipt.date || "N/A",
-      receipt.merchant,
-      receipt.category,
-      receipt.amount_total?.toFixed(2) || "0.00",
-      receipt.currency
-    ]);
+  const handleDelete = (receipt: Receipt) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce reçu ?")) {
+      setReceipts(prev => prev.filter(r => r.id !== receipt.id));
+    }
+  };
 
-    // Generate table
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 50,
-      theme: 'grid',
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [37, 99, 235] }, // Blue-600
-      alternateRowStyles: { fillColor: [248, 250, 252] } // Slate-50
-    });
-
-    doc.save("novareceipt_report.pdf");
+  const handleExport = () => {
+    console.log("Exporting CSV...");
+    // TODO: Implement CSV export
   };
 
   return (
-    <div className="flex h-screen bg-white text-slate-900 font-sans">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-200 bg-white flex flex-col hidden md:flex">
-        <div className="p-6 border-b border-slate-200">
-          <div className="flex items-center gap-2 text-slate-900 font-bold text-xl">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
-            NovaReceipt
-          </div>
-        </div>
+    <div className="min-h-screen bg-slate-50 p-6 md:p-8 font-sans text-slate-900">
+      <div className="max-w-7xl mx-auto">
         
-        <nav className="flex-1 p-4 space-y-1">
-          <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            Main
+        <DashboardHeader onExport={handleExport} />
+
+        <KpiCards stats={stats} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2">
+            <FiltersBar 
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              categoryFilter={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+            />
+            <ReceiptsTable 
+              receipts={filteredReceipts}
+              loading={loading}
+              onViewDetails={handleViewDetails}
+              onReprocess={handleReprocess}
+              onDelete={handleDelete}
+            />
           </div>
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-lg font-medium">
-            <LayoutDashboard className="w-5 h-5" />
-            Dashboard
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-            <Wallet className="w-5 h-5" />
-            Transactions
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-            <PieChart className="w-5 h-5" />
-            Analytics
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-            <CreditCard className="w-5 h-5" />
-            Cards
-          </a>
-
-          <div className="mt-8 px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            Settings
-          </div>
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-            <Settings className="w-5 h-5" />
-            Preferences
-          </a>
-        </nav>
-
-        <div 
-          className="p-4 border-t border-slate-200 relative"
-          onMouseLeave={() => setIsMenuOpen(false)}
-        >
-          {isMenuOpen && (
-            <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-50">
-              <div className="p-4 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">
-                    {user?.email?.[0].toUpperCase() || "U"}
-                  </div>
-                  <div className="overflow-hidden">
-                    <p className="font-bold text-slate-900 truncate text-sm">{user?.user_metadata?.full_name || "Utilisateur"}</p>
-                    <p className="text-xs text-slate-500 truncate">{user?.email}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="py-2">
-                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors">
-                  <Video className="w-4 h-4" />
-                  Tutoriels de démarrage
-                </button>
-                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors">
-                  <Sparkles className="w-4 h-4 text-purple-500" />
-                  Réglages IA
-                  <span className="w-2 h-2 rounded-full bg-purple-500 ml-auto"></span>
-                </button>
-                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors bg-purple-50 text-purple-700">
-                  <CreditCard className="w-4 h-4" />
-                  Voir les plans
-                </button>
-                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors">
-                  <Settings className="w-4 h-4" />
-                  Paramètres du compte
-                </button>
-                <div className="h-px bg-slate-100 my-1"></div>
-                <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                  <LogOut className="w-4 h-4" />
-                  Se déconnecter
-                </button>
-              </div>
-            </div>
-          )}
-
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex items-center gap-3 w-full p-2 hover:bg-slate-50 rounded-lg transition-colors text-left"
-          >
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
-              {user?.email?.[0].toUpperCase() || "M"}
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-slate-900 truncate">
-                {user?.user_metadata?.full_name || "MICHAEL DIA"}
-              </p>
-              <p className="text-xs text-slate-500">Plan gratuit</p>
-            </div>
-            <ChevronUp className="w-4 h-4 text-slate-400" />
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
-        <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 md:px-8">
-          <div className="flex items-center gap-4 md:hidden">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-slate-900">NovaReceipt</span>
-          </div>
-          
-          <div className="hidden md:flex items-center gap-2 text-sm text-slate-500">
-            <span>Organization</span>
-            <span className="text-slate-300">/</span>
-            <span className="text-slate-900 font-medium">My Company</span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full border-2 border-slate-200"></div>
-          </div>
-        </header>
-
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50">
-          <div className="max-w-6xl mx-auto space-y-6">
-            
-            {/* Page Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900">Overview</h1>
-                <p className="text-slate-500 text-sm mt-1">Track your expenses and manage receipts.</p>
-              </div>
-              <div className="flex gap-3">
-                <button 
-                  onClick={exportPDF}
-                  className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors shadow-sm"
-                >
-                  <FileText className="w-4 h-4" />
-                  Export PDF
-                </button>
-                <button 
-                  onClick={exportCSV}
-                  className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors shadow-sm"
-                >
-                  <Download className="w-4 h-4" />
-                  Export CSV
-                </button>
-                <Link 
-                  href="/scan"
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors shadow-lg shadow-blue-500/20"
-                >
-                  <ArrowUpRight className="w-4 h-4" />
-                  New Scan
-                </Link>
-              </div>
-            </div>
-
-            {/* Stats Cards - Qonto Style */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white border border-slate-200 p-6 rounded-xl hover:border-slate-300 transition-colors shadow-sm">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <Wallet className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+12%</span>
-                </div>
-                <p className="text-slate-500 text-sm font-medium">Total Expenses</p>
-                <p className="text-3xl font-bold text-slate-900 mt-1">
-                  {totalAmount.toFixed(2)} <span className="text-lg text-slate-400 font-normal">EUR</span>
-                </p>
-              </div>
-
-              <div className="bg-white border border-slate-200 p-6 rounded-xl hover:border-slate-300 transition-colors shadow-sm">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="p-2 bg-purple-50 rounded-lg">
-                    <FileText className="w-5 h-5 text-purple-600" />
-                  </div>
-                </div>
-                <p className="text-slate-500 text-sm font-medium">Receipts Processed</p>
-                <p className="text-3xl font-bold text-slate-900 mt-1">{filteredReceipts.length}</p>
-              </div>
-
-              <div className="bg-white border border-slate-200 p-6 rounded-xl hover:border-slate-300 transition-colors shadow-sm">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="p-2 bg-orange-50 rounded-lg">
-                    <PieChart className="w-5 h-5 text-orange-600" />
-                  </div>
-                </div>
-                <p className="text-slate-500 text-sm font-medium">Top Category</p>
-                <p className="text-xl font-bold text-slate-900 mt-2 truncate">
-                  {filteredReceipts.length > 0 
-                    ? filteredReceipts.sort((a,b) => 
-                        filteredReceipts.filter(v => v.category === a.category).length - 
-                        filteredReceipts.filter(v => v.category === b.category).length
-                      ).pop()?.category || "N/A"
-                    : "N/A"
-                  }
-                </p>
-              </div>
-            </div>
-
-            {/* Filters & Search */}
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Search by merchant, category..." 
-                  className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all shadow-sm"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="relative w-full md:w-48">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <select 
-                  className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent appearance-none cursor-pointer shadow-sm"
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                >
-                  <option value="ALL">All Categories</option>
-                  <option value="RESTAURANT">Restaurant</option>
-                  <option value="COURSES">Courses</option>
-                  <option value="TAXI">Taxi</option>
-                  <option value="HOTEL">Hotel</option>
-                  <option value="TRANSPORT">Transport</option>
-                  <option value="ESSENCE">Essence</option>
-                  <option value="LOISIR">Loisir</option>
-                  <option value="ABONNEMENT">Abonnement</option>
-                  <option value="AUTRE">Autre</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Transactions Table */}
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
-                    <tr>
-                      <th className="px-6 py-3 font-medium w-32">Date</th>
-                      <th className="px-6 py-3 font-medium">Merchant</th>
-                      <th className="px-6 py-3 font-medium">Category</th>
-                      <th className="px-6 py-3 font-medium text-right">Amount</th>
-                      <th className="px-6 py-3 font-medium text-center">Files</th>
-                      <th className="px-6 py-3 font-medium text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {loading ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                          <div className="flex flex-col items-center gap-2">
-                            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-                            <span>Loading transactions...</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : filteredReceipts.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                          No receipts found matching your filters.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredReceipts.map((receipt) => (
-                        <tr key={receipt.id} className="hover:bg-slate-50 transition-colors group">
-                          <td className="px-6 py-3 text-slate-500 whitespace-nowrap font-mono text-xs">
-                            {receipt.date || "N/A"}
-                          </td>
-                          <td className="px-6 py-3">
-                            <div className="font-medium text-slate-900">{receipt.merchant}</div>
-                          </td>
-                          <td className="px-6 py-3">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                              {receipt.category}
-                            </span>
-                          </td>
-                          <td className="px-6 py-3 text-right font-mono font-medium text-slate-900">
-                            -{receipt.amount_total?.toFixed(2)} {receipt.currency}
-                          </td>
-                          <td className="px-6 py-3">
-                            <div className="flex justify-center gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                              {receipt.pdf_url && (
-                                <a 
-                                  href={receipt.pdf_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                  title="Download PDF"
-                                >
-                                  <FileText className="w-4 h-4" />
-                                </a>
-                              )}
-                              {receipt.excel_url && (
-                                <a 
-                                  href={receipt.excel_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
-                                  title="Download Excel"
-                                >
-                                  <FileText className="w-4 h-4" />
-                                </a>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-3 text-right">
-                            <Link 
-                              href={`/receipts/${receipt.id}`}
-                              className="text-blue-600 hover:text-blue-700 text-xs font-medium hover:underline"
-                            >
-                              Details
-                            </Link>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div className="lg:col-span-1">
+            <UsageChart />
           </div>
         </div>
-      </main>
+
+      </div>
+
+      <ReceiptDrawer 
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        receipt={selectedReceipt}
+        onReprocess={handleReprocess}
+      />
     </div>
   );
 }
