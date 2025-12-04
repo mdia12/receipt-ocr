@@ -109,9 +109,20 @@ export default function ApiDocsPage() {
           {/* Introduction */}
           <Section id="intro" title="Introduction" icon={Book}>
             <p className="text-slate-600 leading-relaxed mb-6">
-              Welcome to the NovaReceipt API documentation. Our API allows you to programmatically upload receipts and invoices to extract structured data using our advanced AI models. 
-              Convert images (JPG, PNG) and PDFs into clean JSON data containing merchant details, dates, amounts, and line items.
+              Welcome to the NovaReceipt API. This API allows you to programmatically extract structured data from receipt images, invoices, and PDFs using our advanced AI models.
+              Send a JPG/PNG/PDF → get back clean JSON containing merchant, date, total amount, currency, line items, categories, and confidence scores.
             </p>
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <h3 className="text-sm font-bold text-amber-900 mb-2 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                API Access Restricted
+              </h3>
+              <p className="text-sm text-amber-800">
+                The API is only available for paid plans. Free accounts can use the web interface to upload and analyze receipts, but do not have access to an API key and will receive a <code className="bg-amber-100 px-1 rounded">401 Unauthorized</code> error.
+              </p>
+            </div>
+
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
               <h3 className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
                 <FileJson className="w-4 h-4" />
@@ -137,22 +148,22 @@ export default function ApiDocsPage() {
           {/* Authentication */}
           <Section id="auth" title="Authentication" icon={Key}>
             <p className="text-slate-600 mb-4">
-              The API uses API keys to authenticate requests. You can view and manage your API keys in the <Link href="/dashboard" className="text-blue-600 hover:underline">Dashboard</Link>.
+              NovaReceipt uses API keys to authenticate requests. You can generate and manage your API keys from your <Link href="/dashboard" className="text-blue-600 hover:underline">Dashboard</Link>.
             </p>
             <p className="text-slate-600 mb-4">
-              Your API keys carry many privileges, so be sure to keep them secure! Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, and so forth.
-            </p>
-            <p className="text-slate-600 mb-6">
-              Authentication to the API is performed via HTTP Basic Auth. Provide your API key as the basic auth username value. You do not need to provide a password.
+              Keep your API keys private and secure. Do not expose them in frontend code or GitHub.
             </p>
             
             <div className="space-y-4">
-              <h3 className="font-semibold text-slate-900">Authorization Header</h3>
+              <h3 className="font-semibold text-slate-900">Authorization Header Format</h3>
               <CodeBlock 
                 id="auth-header"
                 language="http"
                 code="Authorization: Bearer YOUR_API_KEY"
               />
+              <p className="text-sm text-slate-500 italic">
+                If an invalid or free-plan key is provided, the API will return <code className="bg-slate-100 px-1 rounded">401 Unauthorized</code>.
+              </p>
             </div>
           </Section>
 
@@ -237,23 +248,23 @@ print(response.json())`}
                 <tbody className="divide-y divide-slate-200">
                   <tr>
                     <td className="px-6 py-3 font-mono text-red-600">400</td>
-                    <td className="px-6 py-3 text-slate-600">Bad Request - The file format is not supported or missing.</td>
+                    <td className="px-6 py-3 text-slate-600">Invalid or missing file</td>
                   </tr>
                   <tr>
                     <td className="px-6 py-3 font-mono text-red-600">401</td>
-                    <td className="px-6 py-3 text-slate-600">Unauthorized - Invalid API key provided.</td>
+                    <td className="px-6 py-3 text-slate-600">Invalid API key or no API key (free plan)</td>
                   </tr>
                   <tr>
                     <td className="px-6 py-3 font-mono text-red-600">413</td>
-                    <td className="px-6 py-3 text-slate-600">Payload Too Large - The file size exceeds the limit (10MB).</td>
+                    <td className="px-6 py-3 text-slate-600">File too large (max 10MB)</td>
                   </tr>
                   <tr>
                     <td className="px-6 py-3 font-mono text-red-600">429</td>
-                    <td className="px-6 py-3 text-slate-600">Too Many Requests - You have exceeded your rate limit.</td>
+                    <td className="px-6 py-3 text-slate-600">Rate limit exceeded</td>
                   </tr>
                   <tr>
                     <td className="px-6 py-3 font-mono text-red-600">500</td>
-                    <td className="px-6 py-3 text-slate-600">Internal Server Error - Something went wrong on our end.</td>
+                    <td className="px-6 py-3 text-slate-600">Internal server error</td>
                   </tr>
                 </tbody>
               </table>
@@ -263,13 +274,13 @@ print(response.json())`}
           {/* Rate Limits */}
           <Section id="limits" title="Rate Limits" icon={Zap}>
             <p className="text-slate-600 mb-6">
-              API usage is limited based on your subscription plan. Rate limits are applied on a monthly basis.
+              Rate limits depend on your subscription plan.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
+              <div className="p-4 rounded-lg border border-slate-200 bg-slate-50 opacity-75">
                 <h4 className="font-bold text-slate-900 mb-1">Free Plan</h4>
-                <p className="text-2xl font-bold text-blue-600 mb-2">50</p>
-                <p className="text-xs text-slate-500">requests / month</p>
+                <p className="text-2xl font-bold text-slate-400 mb-2">0</p>
+                <p className="text-xs text-red-500 font-medium">No API Access</p>
               </div>
               <div className="p-4 rounded-lg border border-blue-200 bg-blue-50">
                 <h4 className="font-bold text-blue-900 mb-1">Pro Plan</h4>
@@ -278,8 +289,8 @@ print(response.json())`}
               </div>
               <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
                 <h4 className="font-bold text-slate-900 mb-1">Enterprise</h4>
-                <p className="text-2xl font-bold text-blue-600 mb-2">Unlimited</p>
-                <p className="text-xs text-slate-500">custom limits</p>
+                <p className="text-2xl font-bold text-blue-600 mb-2">Custom</p>
+                <p className="text-xs text-slate-500">contact sales</p>
               </div>
             </div>
           </Section>
