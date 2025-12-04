@@ -1,17 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, ArrowRight, LayoutDashboard, LogOut } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { User } from "@supabase/supabase-js";
 
-export default function Navbar({ user }: { user?: any }) {
+export default function Navbar({ user: initialUser }: { user?: User | null }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(initialUser || null);
   const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    setUser(initialUser || null);
+  }, [initialUser]);
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      if (event === "SIGNED_OUT") {
+        router.refresh();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase, router]);
 
   const handleSignOut = async () => {
-    const supabase = createClient();
     await supabase.auth.signOut();
     router.refresh();
   };
