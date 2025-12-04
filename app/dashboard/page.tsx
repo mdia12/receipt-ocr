@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
 import { 
   FileText, 
   Download, 
@@ -15,7 +16,10 @@ import {
   LogOut,
   PieChart,
   Wallet,
-  Bell
+  Bell,
+  Video,
+  Sparkles,
+  ChevronUp
 } from "lucide-react";
 
 interface Receipt {
@@ -35,6 +39,22 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [user, setUser] = useState<any>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  };
 
   useEffect(() => {
     const fetchReceipts = async () => {
@@ -125,11 +145,62 @@ export default function DashboardPage() {
           </a>
         </nav>
 
-        <div className="p-4 border-t border-slate-200">
-          <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-            <LogOut className="w-5 h-5" />
-            Sign Out
-          </a>
+        <div className="p-4 border-t border-slate-200 relative">
+          {isMenuOpen && (
+            <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-50">
+              <div className="p-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">
+                    {user?.email?.[0].toUpperCase() || "U"}
+                  </div>
+                  <div className="overflow-hidden">
+                    <p className="font-bold text-slate-900 truncate text-sm">{user?.user_metadata?.full_name || "Utilisateur"}</p>
+                    <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="py-2">
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors">
+                  <Video className="w-4 h-4" />
+                  Tutoriels de démarrage
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors">
+                  <Sparkles className="w-4 h-4 text-purple-500" />
+                  Réglages IA
+                  <span className="w-2 h-2 rounded-full bg-purple-500 ml-auto"></span>
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors bg-purple-50 text-purple-700">
+                  <CreditCard className="w-4 h-4" />
+                  Voir les plans
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors">
+                  <Settings className="w-4 h-4" />
+                  Paramètres du compte
+                </button>
+                <div className="h-px bg-slate-100 my-1"></div>
+                <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                  <LogOut className="w-4 h-4" />
+                  Se déconnecter
+                </button>
+              </div>
+            </div>
+          )}
+
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="flex items-center gap-3 w-full p-2 hover:bg-slate-50 rounded-lg transition-colors text-left"
+          >
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
+              {user?.email?.[0].toUpperCase() || "M"}
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-sm font-medium text-slate-900 truncate">
+                {user?.user_metadata?.full_name || "MICHAEL DIA"}
+              </p>
+              <p className="text-xs text-slate-500">Plan gratuit</p>
+            </div>
+            <ChevronUp className="w-4 h-4 text-slate-400" />
+          </button>
         </div>
       </aside>
 
