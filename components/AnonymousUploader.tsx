@@ -29,8 +29,7 @@ export default function AnonymousUploader() {
     formData.append("file", file);
 
     try {
-      // Use the direct API path which is handled by Next.js rewrites (dev) or Vercel routes (prod)
-      const res = await fetch("/api/py/anonymous/scan", {
+      const res = await fetch("/api/ocr/anonymous", {
         method: "POST",
         body: formData,
       });
