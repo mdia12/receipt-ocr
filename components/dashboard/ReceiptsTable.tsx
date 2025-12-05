@@ -1,125 +1,116 @@
 "use client";
 
 import { Receipt } from "@/types/receipts";
-import { Eye, FileText, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Eye, RefreshCw, MoreHorizontal, FileText } from "lucide-react";
 
 interface ReceiptsTableProps {
   receipts: Receipt[];
   loading: boolean;
   onViewDetails: (receipt: Receipt) => void;
   onReprocess: (receipt: Receipt) => void;
-  onDelete: (receipt: Receipt) => void;
 }
 
 export default function ReceiptsTable({ 
   receipts, 
   loading, 
   onViewDetails,
-  onReprocess,
-  onDelete
+  onReprocess 
 }: ReceiptsTableProps) {
-  
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "success":
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">Succès</span>;
-      case "partial":
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-100">Partiel</span>;
-      case "failed":
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">Échec</span>;
-      case "processing":
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">En cours</span>;
-      default:
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">{status}</span>;
-    }
-  };
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-12 text-center">
+        <div className="animate-spin w-8 h-8 border-4 border-violet-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p className="text-slate-500">Loading receipts...</p>
+      </div>
+    );
+  }
+
+  if (receipts.length === 0) {
+    return (
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-12 text-center">
+        <p className="text-slate-500">No receipts found matching your criteria.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
+          <thead className="bg-slate-50 text-slate-500 border-b border-slate-100">
             <tr>
-              <th className="px-6 py-3 font-medium w-32">Date</th>
-              <th className="px-6 py-3 font-medium">Commerçant</th>
-              <th className="px-6 py-3 font-medium">Catégorie</th>
-              <th className="px-6 py-3 font-medium text-right">Montant</th>
-              <th className="px-6 py-3 font-medium text-center">Statut</th>
-              <th className="px-6 py-3 font-medium text-center">Fichiers</th>
-              <th className="px-6 py-3 font-medium text-right">Actions</th>
+              <th className="px-6 py-4 font-medium">Date</th>
+              <th className="px-6 py-4 font-medium">Merchant</th>
+              <th className="px-6 py-4 font-medium">Category</th>
+              <th className="px-6 py-4 font-medium text-right">Amount</th>
+              <th className="px-6 py-4 font-medium text-center">Status</th>
+              <th className="px-6 py-4 font-medium text-center">Files</th>
+              <th className="px-6 py-4 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {loading ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
-                  Chargement des reçus...
+            {receipts.map((receipt) => (
+              <tr key={receipt.id} className="hover:bg-slate-50/50 transition-colors group">
+                <td className="px-6 py-4 text-slate-500 whitespace-nowrap">
+                  {receipt.date ? new Date(receipt.date).toLocaleDateString('en-GB', {
+                    day: '2-digit', month: 'short', year: 'numeric'
+                  }) : <span className="text-slate-300">N/A</span>}
                 </td>
-              </tr>
-            ) : receipts.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
-                  Aucun reçu trouvé.
+                <td className="px-6 py-4 font-medium text-slate-900">
+                  {receipt.merchant}
                 </td>
-              </tr>
-            ) : (
-              receipts.map((receipt) => (
-                <tr key={receipt.id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-6 py-4 text-slate-500 whitespace-nowrap font-mono text-xs">
-                    {new Date(receipt.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-slate-900">{receipt.merchant}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                      {receipt.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right font-mono font-medium text-slate-900">
-                    {receipt.amount.toFixed(2)} {receipt.currency}
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    {getStatusBadge(receipt.status)}
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <Link 
-                      href={`/receipts/${receipt.id}`}
-                      className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded transition-colors"
-                      title="Voir le détail"
+                <td className="px-6 py-4">
+                  <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                    {receipt.category || "Uncategorized"}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-right font-mono text-slate-700">
+                  {receipt.amount_total?.toFixed(2)} {receipt.currency}
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                    receipt.status === 'success' ? 'bg-green-50 text-green-700 border-green-100' :
+                    receipt.status === 'partial' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+                    receipt.status === 'failed' ? 'bg-red-50 text-red-700 border-red-100' :
+                    'bg-slate-100 text-slate-600 border-slate-200'
+                  }`}>
+                    {receipt.status === 'success' && 'Success'}
+                    {receipt.status === 'partial' && 'Partial'}
+                    {receipt.status === 'failed' && 'Failed'}
+                    {receipt.status === 'processing' && 'Processing'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  {receipt.file_url && (
+                    <button 
+                      onClick={() => onViewDetails(receipt)}
+                      className="p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded transition-colors"
+                      title="View File"
                     >
                       <FileText className="w-4 h-4" />
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => onViewDetails(receipt)}
-                        className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="Détails rapides"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => onReprocess(receipt)}
-                        className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
-                        title="Relancer OCR"
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => onDelete(receipt)}
-                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
+                    </button>
+                  )}
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <div className="flex justify-end gap-2">
+                    <button 
+                      onClick={() => onViewDetails(receipt)}
+                      className="p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded transition-colors"
+                      title="View Details"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => onReprocess(receipt)}
+                      className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      title="Reprocess OCR"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

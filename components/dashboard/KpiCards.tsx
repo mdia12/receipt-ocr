@@ -18,9 +18,9 @@ export default function KpiCards({ stats }: KpiCardsProps) {
             +12%
           </span>
         </div>
-        <p className="text-slate-500 text-sm font-medium">Dépenses Totales</p>
+        <p className="text-slate-500 text-sm font-medium">Total Expenses</p>
         <p className="text-2xl font-bold text-slate-900 mt-1">
-          {stats.totalExpenses.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+          {stats.totalExpenses.toLocaleString('en-US', { style: 'currency', currency: 'EUR' })}
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export default function KpiCards({ stats }: KpiCardsProps) {
             <FileText className="w-5 h-5 text-blue-600" />
           </div>
         </div>
-        <p className="text-slate-500 text-sm font-medium">Reçus Traités</p>
+        <p className="text-slate-500 text-sm font-medium">Receipts Processed</p>
         <p className="text-2xl font-bold text-slate-900 mt-1">
           {stats.totalReceipts}
         </p>
@@ -44,7 +44,7 @@ export default function KpiCards({ stats }: KpiCardsProps) {
             <PieChart className="w-5 h-5 text-orange-600" />
           </div>
         </div>
-        <p className="text-slate-500 text-sm font-medium">Top Catégorie</p>
+        <p className="text-slate-500 text-sm font-medium">Top Category</p>
         <p className="text-2xl font-bold text-slate-900 mt-1 truncate">
           {stats.topCategory || "N/A"}
         </p>
@@ -58,11 +58,11 @@ export default function KpiCards({ stats }: KpiCardsProps) {
           </div>
           {stats.planLimit && (
             <span className="text-xs font-medium text-slate-500 bg-slate-50 px-2 py-1 rounded-full">
-              Limite: {stats.planLimit}
+              Limit: {stats.planLimit}
             </span>
           )}
         </div>
-        <p className="text-slate-500 text-sm font-medium">Scans du mois</p>
+        <p className="text-slate-500 text-sm font-medium">Scans this month</p>
         <p className="text-2xl font-bold text-slate-900 mt-1">
           {stats.scansThisMonth} <span className="text-sm text-slate-400 font-normal">/ {stats.planLimit || "∞"}</span>
         </p>

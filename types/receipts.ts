@@ -3,15 +3,18 @@ export type ReceiptStatus = "success" | "partial" | "failed" | "processing";
 export type Receipt = {
   id: string;
   userId: string;
-  date: string;            // ISO string
+  date: string | null;            // ISO string
   merchant: string;
-  category: string;
-  amount: number;
-  currency: string;
+  category: string | null;
+  amount_total: number | null;
+  currency: string | null;
   status: ReceiptStatus;   // success / partial / failed
-  fileUrl: string;         // URL du PDF ou de l’image
-  createdAt: string;
-  items?: Array<{ description: string; amount: number }>; // Optional items detail
+  file_url: string | null;         // URL du PDF ou de l’image
+  created_at: string;
+  // Optional fields for compatibility if needed
+  items?: any[];
+  excel_url?: string | null;
+  pdf_url?: string | null;
 };
 
 export type DashboardStats = {
