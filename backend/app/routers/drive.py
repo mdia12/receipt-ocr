@@ -31,6 +31,7 @@ async def drive_status(
     supabase_client = Depends(get_supabase_client),
 ):
     try:
+        print(f"Checking drive status for user_id: {user['id']}")
         # Check if token exists for user
         resp = (
             supabase_client.table("google_drive_tokens")
@@ -40,6 +41,7 @@ async def drive_status(
             .execute()
         )
         
+        print(f"Supabase response for {user['id']}: {resp.data}")
         connected = resp.data is not None
         return {"connected": connected}
     except Exception as e:
@@ -48,6 +50,7 @@ async def drive_status(
 
 @router.get("/auth/init")
 def auth_init(state: str = "/dashboard"):
+    print(f"Initializing auth with state: {state}")
     flow = get_auth_flow(state=state)
     auth_url, _ = flow.authorization_url(
         access_type="offline",
@@ -58,25 +61,40 @@ def auth_init(state: str = "/dashboard"):
 
 @router.post("/auth/exchange")
 async def auth_exchange(request: ExchangeRequest):
+    print(f"Exchanging code for user_id: {request.user_id}")
     try:
         flow = get_auth_flow()
         # The redirect_uri in flow must match the one used in auth_init
         flow.fetch_token(code=request.code)
         creds = flow.credentials
+        
+        print(f"Token fetched. Access Token: {creds.token[:10]}... Refresh Token: {'Yes' if creds.refresh_token else 'No'}")
 
         # Save to Supabase
-        supabase.table("google_drive_tokens").upsert({
+        data = {
             "user_id": request.user_id,
             "access_token": creds.token,
             "refresh_token": creds.refresh_token,
             "expires_at": creds.expiry.isoformat() if creds.expiry else None,
             "updated_at": "now()"
-        }).execute()
+        }
+        
+        # If refresh_token is missing (sometimes happens on re-auth), don't overwrite with None if we already have one?
+        # Actually, we forced prompt="consent", so we should get it. 
+        # But let's be safe: if it's None, remove it from the update dict so we don't nullify an existing one.
+        if not data["refresh_token"]:
+            del data["refresh_token"]
+
+        print(f"Upserting to Supabase: {data.keys()}")
+        
+        result = supabase.table("google_drive_tokens").upsert(data).execute()
+        print(f"Supabase upsert result: {result}")
 
         # Initialize folder immediately
         try:
             drive_service = GoogleDriveService(request.user_id)
             drive_service.initialize_storage()
+            print("Folder initialization successful")
         except Exception as e:
             print(f"Failed to initialize folder: {e}")
             # Don't fail the auth if folder creation fails, it can happen later on upload
@@ -84,6 +102,8 @@ async def auth_exchange(request: ExchangeRequest):
         return {"status": "success"}
     except Exception as e:
         print(f"Auth Exchange Error: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/upload")
