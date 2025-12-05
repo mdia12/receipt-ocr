@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Request, Query
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 import base64
@@ -9,6 +9,13 @@ from supabase import create_client, Client
 router = APIRouter(prefix="/drive", tags=["drive"])
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
 
+# Dependencies
+def get_current_user(user_id: str = Query(..., description="The user ID")):
+    return {"id": user_id}
+
+def get_supabase_client():
+    return supabase
+
 class UploadRequest(BaseModel):
     user_id: str
     filename: str
@@ -17,6 +24,27 @@ class UploadRequest(BaseModel):
 class ExchangeRequest(BaseModel):
     code: str
     user_id: str
+
+@router.get("/status")
+async def drive_status(
+    user = Depends(get_current_user),
+    supabase_client = Depends(get_supabase_client),
+):
+    try:
+        # Check if token exists for user
+        resp = (
+            supabase_client.table("google_drive_tokens")
+            .select("id")
+            .eq("user_id", user["id"])
+            .maybe_single()
+            .execute()
+        )
+        
+        connected = resp.data is not None
+        return {"connected": connected}
+    except Exception as e:
+        print(f"Drive status check error: {e}")
+        return {"connected": False}
 
 @router.get("/auth/init")
 def auth_init(state: str = "/dashboard"):
