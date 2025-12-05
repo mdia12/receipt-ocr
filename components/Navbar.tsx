@@ -150,6 +150,9 @@ export default function Navbar({ user: initialUser }: { user?: User | null }) {
                     <LayoutDashboard className="w-4 h-4" />
                     Dashboard
                   </Link>
+                  <div className="px-4 py-1.5 text-xs text-slate-400 font-medium truncate border-t border-slate-100 mt-1 pt-2">
+                    {user.email}
+                  </div>
                   <button 
                     onClick={() => {
                       handleSignOut();
