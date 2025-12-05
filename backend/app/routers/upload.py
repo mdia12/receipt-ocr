@@ -9,10 +9,12 @@ from app.config import settings
 import uuid
 import traceback
 import hashlib
+import httpx
+from typing import Optional
 
 router = APIRouter()
 
-async def process_receipt_job(job_id: str, file_bytes: bytes, file_ext: str):
+async def process_receipt_job(job_id: str, file_bytes: bytes, file_ext: str, email: Optional[str] = None):
     storage_service = get_storage_service()
     try:
         # Calculate checksum for debug
@@ -57,6 +59,30 @@ async def process_receipt_job(job_id: str, file_bytes: bytes, file_ext: str):
         # 5. Update Job
         jobs_service.mark_job_ready(job_id, excel_url, pdf_url, receipt_data.model_dump())
         
+        # Send email notification
+        if email:
+            try:
+                print(f"[{job_id}] Sending completion email to {email}")
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        f"{settings.FRONTEND_URL}/api/email/scan-completed",
+                        json={
+                            "email": email,
+                            "jobId": job_id,
+                            "merchant": receipt_data.merchant,
+                            "amount": receipt_data.amount_total,
+                            "currency": receipt_data.currency,
+                            "date": receipt_data.date,
+                            "category": receipt_data.category,
+                            "excelUrl": excel_url,
+                            "pdfUrl": pdf_url
+                        },
+                        timeout=10.0
+                    )
+                    print(f"[{job_id}] Email API response: {response.status_code} {response.text}")
+            except Exception as e:
+                print(f"[{job_id}] Failed to send email: {e}")
+        
         # TODO: Save structured receipt data to 'receipts' table if needed
         
     except Exception as e:
@@ -73,7 +99,8 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks,
 async def upload_receipt(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    user_id: Optional[str] = Form(None)
+    user_id: Optional[str] = Form(None),
+    email: Optional[str] = Form(None)
 ):
     storage_service = get_storage_service()
     if not file:
@@ -98,7 +125,7 @@ async def upload_receipt(
         jobs_service.create_job(job_id, raw_url, user_id=user_id)
         
         # 3. Trigger Processing in Background
-        background_tasks.add_task(process_receipt_job, job_id, file_bytes, file_ext)
+        background_tasks.add_task(process_receipt_job, job_id, file_bytes, file_ext, email)
         
         return {"job_id": job_id, "status": "processing", "message": "Upload successful, processing started"}
         

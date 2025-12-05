@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     # App
     PORT: int = 8000
     HOST: str = "0.0.0.0"
+    FRONTEND_URL: str = "https://novareceipt.com"
 
     # OpenAI
     OPENAI_API_KEY: str | None = None

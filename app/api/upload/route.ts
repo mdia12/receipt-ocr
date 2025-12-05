@@ -15,6 +15,9 @@ export async function POST(request: Request) {
 
     if (user) {
       formData.append("user_id", user.id);
+      if (user.email) {
+        formData.append("email", user.email);
+      }
     }
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
