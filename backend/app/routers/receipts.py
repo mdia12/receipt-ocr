@@ -23,7 +23,8 @@ async def list_receipts(limit: int = 50, user_id: Optional[str] = None):
             "currency": receipt_data.get("currency"),
             "category": receipt_data.get("category"),
             "excel_url": job.get("excel_url"),
-            "pdf_url": job.get("pdf_url")
+            "pdf_url": job.get("pdf_url"),
+            "file_url": job.get("file_url")
         })
         
     return results
