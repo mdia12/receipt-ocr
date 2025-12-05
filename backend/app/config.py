@@ -14,8 +14,10 @@ class Settings(BaseSettings):
     GOOGLE_APPLICATION_CREDENTIALS_BASE64: str | None = None
     
     # Google OAuth
-    GOOGLE_CLIENT_ID: str | None = None
-    GOOGLE_CLIENT_SECRET: str | None = None
+    google_client_id: str | None = None
+    google_client_secret: str | None = None
+    google_redirect_uri: str | None = None
+    google_api_scopes: str = "https://www.googleapis.com/auth/drive.file"
 
     # Storage Buckets
     BUCKET_RAW: str = "receipts_raw"

@@ -2,6 +2,7 @@ import io
 import base64
 from datetime import datetime, timezone
 from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
@@ -10,6 +11,22 @@ from app.config import settings
 
 # Initialize Supabase client
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
+
+def get_auth_flow(state: str = None):
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": settings.google_client_id,
+                "client_secret": settings.google_client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=[settings.google_api_scopes],
+        redirect_uri=settings.google_redirect_uri,
+        state=state
+    )
+    return flow
 
 class GoogleDriveService:
     def __init__(self, user_id: str):
@@ -33,9 +50,9 @@ class GoogleDriveService:
                 token=token_data["access_token"],
                 refresh_token=token_data["refresh_token"],
                 token_uri="https://oauth2.googleapis.com/token",
-                client_id=settings.GOOGLE_CLIENT_ID,
-                client_secret=settings.GOOGLE_CLIENT_SECRET,
-                scopes=["https://www.googleapis.com/auth/drive.file"]
+                client_id=settings.google_client_id,
+                client_secret=settings.google_client_secret,
+                scopes=[settings.google_api_scopes]
             )
 
             # Refresh if expired
