@@ -109,42 +109,42 @@ export default function Navbar({ user: initialUser }: { user?: User | null }) {
 
         {/* Mobile Nav Overlay */}
         {isOpen && (
-          <div className="absolute top-16 left-0 right-0 bg-white border-b border-slate-200 shadow-xl md:hidden flex flex-col p-4 animate-in slide-in-from-top duration-200">
-            <nav className="flex flex-col gap-2">
+          <div className="absolute top-16 right-4 w-64 bg-white border border-slate-200 rounded-xl shadow-2xl md:hidden flex flex-col p-2 animate-in slide-in-from-top-2 duration-200 z-50">
+            <nav className="flex flex-col gap-1">
               <Link 
                 href="/fonctionnalites" 
-                className="px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors"
+                className="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors flex items-center gap-3"
                 onClick={() => setIsOpen(false)}
               >
                 Fonctionnalités
               </Link>
               <Link 
                 href="/tarifs" 
-                className="px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors"
+                className="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors flex items-center gap-3"
                 onClick={() => setIsOpen(false)}
               >
                 Tarifs
               </Link>
               <Link 
                 href="/securite" 
-                className="px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors"
+                className="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors flex items-center gap-3"
                 onClick={() => setIsOpen(false)}
               >
                 Sécurité
               </Link>
               <Link 
                 href="/faq" 
-                className="px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors"
+                className="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors flex items-center gap-3"
                 onClick={() => setIsOpen(false)}
               >
                 FAQ
               </Link>
-              <div className="h-px bg-slate-100 my-2"></div>
+              <div className="h-px bg-slate-100 my-1 mx-2"></div>
               {user ? (
                 <>
                   <Link 
                     href="/dashboard" 
-                    className="px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors text-center flex items-center justify-center gap-2"
+                    className="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors flex items-center gap-3"
                     onClick={() => setIsOpen(false)}
                   >
                     <LayoutDashboard className="w-4 h-4" />
@@ -155,7 +155,7 @@ export default function Navbar({ user: initialUser }: { user?: User | null }) {
                       handleSignOut();
                       setIsOpen(false);
                     }}
-                    className="px-4 py-3 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg font-medium transition-colors text-center flex items-center justify-center gap-2"
+                    className="w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg font-medium transition-colors flex items-center gap-3 text-left"
                   >
                     <LogOut className="w-4 h-4" />
                     Déconnexion
@@ -165,14 +165,14 @@ export default function Navbar({ user: initialUser }: { user?: User | null }) {
                 <>
                   <Link 
                     href="/login?view=login" 
-                    className="px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors text-center"
+                    className="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium transition-colors flex items-center gap-3"
                     onClick={() => setIsOpen(false)}
                   >
                     Connexion
                   </Link>
                   <Link 
                     href="/login?view=signup" 
-                    className="px-4 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-colors text-center"
+                    className="px-4 py-2.5 text-sm bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 mt-1 shadow-sm"
                     onClick={() => setIsOpen(false)}
                   >
                     Inscription
