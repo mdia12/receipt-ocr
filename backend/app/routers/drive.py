@@ -45,6 +45,14 @@ async def auth_exchange(request: ExchangeRequest):
             "updated_at": "now()"
         }).execute()
 
+        # Initialize folder immediately
+        try:
+            drive_service = GoogleDriveService(request.user_id)
+            drive_service.initialize_storage()
+        except Exception as e:
+            print(f"Failed to initialize folder: {e}")
+            # Don't fail the auth if folder creation fails, it can happen later on upload
+
         return {"status": "success"}
     except Exception as e:
         print(f"Auth Exchange Error: {e}")

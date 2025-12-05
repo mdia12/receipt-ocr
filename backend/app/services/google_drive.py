@@ -71,6 +71,10 @@ class GoogleDriveService:
             print(f"Error getting Google Creds: {e}")
             return None
 
+    def initialize_storage(self):
+        """Creates the NovaReceipt folder if it doesn't exist."""
+        return self._get_or_create_folder()
+
     def _get_or_create_folder(self, folder_name="NovaReceipt"):
         if not self.service:
             return None
