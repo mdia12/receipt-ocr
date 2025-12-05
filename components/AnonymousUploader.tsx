@@ -13,6 +13,8 @@ export default function AnonymousUploader() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
+  console.log("API Base URL:", API_BASE_URL);
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -29,8 +31,9 @@ export default function AnonymousUploader() {
     const formData = new FormData();
     formData.append("file", file);
 
-        try {
-      const res = await fetch("/api/ocr/anonymous", {
+    try {
+      // Use direct backend URL to bypass Vercel proxy issues
+      const res = await fetch(`${API_BASE_URL}/api/py/anonymous/scan`, {
         method: "POST",
         body: formData,
       });
