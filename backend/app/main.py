@@ -6,7 +6,7 @@ import base64
 
 # --- Relative Imports ---
 from .config import settings
-from .routers import upload, status, receipts
+from .routers import upload, status, receipts, drive
 from app.services.ocr import ocr_service
 from app.services.llm_parser import llm_parser_service
 # ------------------------
@@ -68,6 +68,7 @@ app.add_middleware(
 app.include_router(upload.router, tags=["Upload"])
 app.include_router(status.router, tags=["Status"])
 app.include_router(receipts.router, tags=["Receipts"])
+app.include_router(drive.router, tags=["Drive"])
 
 @app.get("/")
 def root():

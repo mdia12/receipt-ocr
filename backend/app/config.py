@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     # Google Cloud Vision
     GOOGLE_APPLICATION_CREDENTIALS_BASE64: str | None = None
     
+    # Google OAuth
+    GOOGLE_CLIENT_ID: str | None = None
+    GOOGLE_CLIENT_SECRET: str | None = None
+
     # Storage Buckets
     BUCKET_RAW: str = "receipts_raw"
     BUCKET_PDF: str = "receipts_pdf"
