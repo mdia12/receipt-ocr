@@ -52,3 +52,6 @@ tzdata==2025.2
 urllib3==2.5.0
 uvicorn==0.27.0
 websockets
+google-auth-oauthlib
+google-api-python-client
+google-auth-httplib2
