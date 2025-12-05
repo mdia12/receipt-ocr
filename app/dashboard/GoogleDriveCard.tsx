@@ -11,14 +11,23 @@ export function GoogleDriveCard() {
       try {
         const res = await fetch("/api/drive/status", { cache: "no-store" });
         const data = await res.json();
-        setConnected(!!data.connected);
+        console.log("Drive status response:", data);
+        setConnected(data.connected === true);
       } catch (e) {
         console.error("Drive status UI error:", e);
         setConnected(false);
       }
     };
 
+    // Initial check
     checkStatus();
+
+    // Secondary check to handle race conditions after OAuth redirect
+    const timer = setTimeout(() => {
+      checkStatus();
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const label =
