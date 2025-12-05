@@ -30,17 +30,10 @@ export default function AnonymousUploader() {
     formData.append("file", file);
 
         try {
-      if (!API_BASE_URL) {
-        throw new Error("API base URL is not configured.");
-      }
-
-      const res = await fetch(
-        `${API_BASE_URL}/api/py/anonymous/scan`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const res = await fetch("/api/ocr/anonymous", {
+        method: "POST",
+        body: formData,
+      });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -53,20 +46,18 @@ export default function AnonymousUploader() {
       }
 
       setResult(data);
-      recordScan();
+      recordScan(); // Update quota
     } catch (err: any) {
       console.error(err);
       setError(err.message || "An error occurred during scanning.");
     } finally {
-      ...
-    }
-
       setLoading(false);
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
     }
+  };
   };
 
   const triggerFileInput = () => {
