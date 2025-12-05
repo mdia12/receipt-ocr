@@ -20,7 +20,7 @@ export default function AnonymousUploader() {
     if (!file) return;
 
     if (!isAllowed) {
-      setError(`You have reached the anonymous limit. Please try again in ${timeRemaining} or create a free account.`);
+      setError(`Vous avez atteint la limite anonyme. Veuillez réessayer dans ${timeRemaining} ou créer un compte gratuit.`);
       return;
     }
 
@@ -40,7 +40,7 @@ export default function AnonymousUploader() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Upload failed with status ${res.status}`);
+        throw new Error(errData.error || `Échec du téléchargement avec le statut ${res.status}`);
       }
 
       const data = await res.json();
@@ -52,7 +52,7 @@ export default function AnonymousUploader() {
       recordScan(); // Update quota
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "An error occurred during scanning.");
+      setError(err.message || "Une erreur est survenue lors du scan.");
     } finally {
       setLoading(false);
       // Reset file input
@@ -64,30 +64,57 @@ export default function AnonymousUploader() {
 
   const triggerFileInput = () => {
     if (!isAllowed) {
-      setError(`You have reached the anonymous limit. Please try again in ${timeRemaining} or create a free account.`);
+      setError(`Vous avez atteint la limite anonyme. Veuillez réessayer dans ${timeRemaining} ou créer un compte gratuit.`);
       return;
     }
     fileInputRef.current?.click();
   };
 
+  const downloadCsv = () => {
+    if (!result) return;
+
+    const headers = ["Merchant,Date,Total Amount,Currency,Category,Line Items"];
+    const itemsStr = result.items 
+      ? result.items.map((i: any) => `${i.description} (${i.amount})`).join(" | ") 
+      : "";
+
+    const row = [
+      `"${result.merchant || ""}"`,
+      `"${result.date || ""}"`,
+      result.amount_total || 0,
+      `"${result.currency || ""}"`,
+      `"${result.category || ""}"`,
+      `"${itemsStr}"`
+    ].join(",");
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers, row].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "nova-receipt.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
       <div className="text-center space-y-4">
-        <h2 className="text-2xl font-bold text-slate-900">Try NovaReceipt for Free</h2>
+        <h2 className="text-2xl font-bold text-slate-900">Essayez NovaReceipt Gratuitement</h2>
         <p className="text-slate-600">
-          Scan one receipt instantly without signing up.
+          Scannez un reçu instantanément sans inscription.
         </p>
 
         {!isAllowed && (
           <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-lg flex items-start gap-3 text-left text-sm">
             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium">Daily Limit Reached</p>
+              <p className="font-medium">Limite quotidienne atteinte</p>
               <p className="mt-1">
-                You can scan another receipt in {timeRemaining}. 
+                Vous pourrez scanner un autre reçu dans {timeRemaining}. 
                 <Link href="/signup" className="text-blue-600 hover:underline ml-1">
-                  Create a free account
-                </Link> to unlock 20 scans/day.
+                  Créez un compte gratuit
+                </Link> pour débloquer 20 scans/jour.
               </p>
             </div>
           </div>
@@ -123,18 +150,18 @@ export default function AnonymousUploader() {
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Processing...
+                Traitement...
               </>
             ) : (
               <>
                 <Upload className="w-5 h-5" />
-                Try Now - No Sign Up
+                Essayer maintenant - Sans inscription
               </>
             )}
           </button>
         </div>
         <p className="text-xs text-slate-500">
-          Supports JPG, PNG, PDF. Max 5MB.
+          Supporte JPG, PNG, PDF. Max 5Mo.
         </p>
       </div>
 
@@ -145,19 +172,19 @@ export default function AnonymousUploader() {
             <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
               <h3 className="font-medium text-slate-900 flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                Scan Results
+                Résultats du scan
               </h3>
               <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-100">
-                Confidence: {(result.confidence * 100).toFixed(0)}%
+                Confiance: {(result.confidence * 100).toFixed(0)}%
               </span>
             </div>
             <div className="p-4 grid gap-4 sm:grid-cols-2 text-sm">
               <div>
-                <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">Merchant</p>
+                <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">Commerçant</p>
                 <p className="text-slate-900 font-medium text-lg">{result.merchant}</p>
               </div>
               <div>
-                <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">Total Amount</p>
+                <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">Montant Total</p>
                 <p className="text-slate-900 font-medium text-lg font-mono">
                   {result.amount_total?.toFixed(2)} {result.currency}
                 </p>
@@ -167,7 +194,7 @@ export default function AnonymousUploader() {
                 <p className="text-slate-700">{result.date}</p>
               </div>
               <div>
-                <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">Category</p>
+                <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">Catégorie</p>
                 <span className="inline-block px-2 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200 text-xs">
                   {result.category}
                 </span>
@@ -177,7 +204,7 @@ export default function AnonymousUploader() {
             {/* Items */}
             {result.items && result.items.length > 0 && (
               <div className="border-t border-slate-200 p-4 bg-slate-50/50">
-                <p className="text-slate-500 text-xs uppercase tracking-wider mb-3">Line Items</p>
+                <p className="text-slate-500 text-xs uppercase tracking-wider mb-3">Articles</p>
                 <div className="space-y-2">
                   {result.items.map((item: any, idx: number) => (
                     <div key={idx} className="flex justify-between text-slate-700 text-xs">
@@ -190,14 +217,22 @@ export default function AnonymousUploader() {
             )}
 
             <div className="bg-slate-50 p-4 text-center border-t border-slate-200">
+              <button 
+                onClick={downloadCsv}
+                className="mb-4 inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-500 font-medium"
+              >
+                <FileText className="w-4 h-4" />
+                Télécharger CSV
+              </button>
+
               <p className="text-slate-600 text-sm mb-3">
-                Want to save this receipt and export to Excel?
+                Vous voulez sauvegarder ce reçu et l'exporter vers Excel ?
               </p>
               <Link 
                 href="/signup"
                 className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-500 font-medium text-sm hover:underline"
               >
-                Create Free Account <ArrowUpRight className="w-3 h-3" />
+                Créer un compte gratuit <ArrowUpRight className="w-3 h-3" />
               </Link>
             </div>
           </div>
