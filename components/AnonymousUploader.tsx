@@ -58,7 +58,6 @@ export default function AnonymousUploader() {
       }
     }
   };
-  };
 
   const triggerFileInput = () => {
     if (!isAllowed) {
