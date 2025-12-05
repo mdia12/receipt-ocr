@@ -90,6 +90,8 @@ async def anonymous_scan(file: UploadFile = File(...)):
     - Parses with LLM (OpenAI)
     - Returns structured JSON
     - NO DB Storage
+    # GUARANTEE: This endpoint MUST NOT save the file or data to any persistent storage (DB, S3, etc.)
+    # It is strictly for anonymous, on-the-fly processing.
     """
     try:
         content = await file.read()

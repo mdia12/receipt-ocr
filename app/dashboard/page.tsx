@@ -163,7 +163,7 @@ export default function DashboardPage() {
               Exporter CSV
             </button>
             <Link 
-              href="/"
+              href="/dashboard/scan"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors shadow-lg shadow-blue-500/20"
             >
               <ArrowUpRight className="w-4 h-4" />

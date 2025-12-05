@@ -219,7 +219,7 @@ export default function AnonymousUploader() {
             <div className="bg-slate-50 p-4 text-center border-t border-slate-200">
               <button 
                 onClick={downloadCsv}
-                className="mb-4 inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-500 font-medium"
+                className="mb-4 inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium transition-colors shadow-sm"
               >
                 <FileText className="w-4 h-4" />
                 Télécharger CSV
