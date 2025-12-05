@@ -1,5 +1,6 @@
 import io
 import base64
+import os
 from datetime import datetime, timezone
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
@@ -8,6 +9,9 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from supabase import create_client, Client
 from app.config import settings
+
+# Allow OAuth scope to change (e.g. adding openid/email/profile)
+os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 
 # Initialize Supabase client
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
@@ -22,7 +26,7 @@ def get_auth_flow(state: str = None):
                 "token_uri": "https://oauth2.googleapis.com/token",
             }
         },
-        scopes=[settings.google_api_scopes],
+        scopes=settings.google_api_scopes,
         redirect_uri=settings.google_redirect_uri,
         state=state
     )
@@ -52,7 +56,7 @@ class GoogleDriveService:
                 token_uri="https://oauth2.googleapis.com/token",
                 client_id=settings.google_client_id,
                 client_secret=settings.google_client_secret,
-                scopes=[settings.google_api_scopes]
+                scopes=settings.google_api_scopes
             )
 
             # Refresh if expired
