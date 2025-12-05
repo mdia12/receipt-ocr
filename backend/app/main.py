@@ -54,7 +54,11 @@ async def strip_api_prefix(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://novareceipt.com",
+        "https://www.novareceipt.com",
+        "http://localhost:3000",  # utile en dev
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
