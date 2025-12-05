@@ -100,7 +100,7 @@ export default function AnonymousUploader() {
   return (
     <div className="w-full max-w-2xl mx-auto bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
       <div className="text-center space-y-4">
-        <h2 className="text-2xl font-bold text-slate-900">Essayez NovaReceipt Gratuitement</h2>
+        <h2 className="text-2xl font-bold text-slate-900">Essayez <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">NovaReceipt</span> Gratuitement</h2>
         <p className="text-slate-600">
           Scannez un reçu instantanément sans inscription.
         </p>
