@@ -11,6 +11,7 @@ export default function AnonymousUploader() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -28,11 +29,18 @@ export default function AnonymousUploader() {
     const formData = new FormData();
     formData.append("file", file);
 
-    try {
-      const res = await fetch("/api/ocr/anonymous", {
-        method: "POST",
-        body: formData,
-      });
+        try {
+      if (!API_BASE_URL) {
+        throw new Error("API base URL is not configured.");
+      }
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/py/anonymous/scan`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -45,11 +53,14 @@ export default function AnonymousUploader() {
       }
 
       setResult(data);
-      recordScan(); // Update quota
+      recordScan();
     } catch (err: any) {
       console.error(err);
       setError(err.message || "An error occurred during scanning.");
     } finally {
+      ...
+    }
+
       setLoading(false);
       // Reset file input
       if (fileInputRef.current) {
