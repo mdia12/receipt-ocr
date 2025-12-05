@@ -34,6 +34,15 @@ export default function DashboardPage() {
 
   // Fetch Data
   useEffect(() => {
+    // Check for errors in URL
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("error");
+    const details = params.get("details");
+    if (error) {
+      alert(`Google Drive Connection Failed: ${error}
+Details: ${details || "Check console"}`);
+    }
+
     const fetchData = async () => {
       try {
         const [receiptsRes, driveRes] = await Promise.all([

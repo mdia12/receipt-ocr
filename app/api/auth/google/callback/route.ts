@@ -48,8 +48,9 @@ export async function GET(request: Request) {
 
     return NextResponse.redirect(new URL(state, request.url));
 
-  } catch (err) {
+  } catch (err: any) {
     console.error(err);
-    return NextResponse.redirect(new URL("/dashboard?error=auth_failed", request.url));
+    const errorMessage = err.message || "Unknown error";
+    return NextResponse.redirect(new URL(`/dashboard?error=auth_failed&details=${encodeURIComponent(errorMessage)}`, request.url));
   }
 }
