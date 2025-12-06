@@ -33,6 +33,25 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // --- ADMIN PROTECTION ---
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    // 1. Must be logged in
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    // 2. Must be admin
+    // We check user_metadata first for performance (synced via trigger)
+    const role = user.user_metadata?.role || 'user'
+    
+    if (role !== 'admin') {
+      // Fallback: Check profile if metadata is missing (optional, but safer)
+      // For now, we rely on the metadata sync for speed in middleware
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+  }
+  // ------------------------
+
   // Protect routes
   if (
     !user &&

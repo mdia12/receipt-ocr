@@ -57,7 +57,19 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-slate-50 flex items-center justify-center p-4 md:p-8">
+    <div className="min-h-[calc(100vh-4rem)] bg-slate-50 flex flex-col items-center justify-center p-4 md:p-8">
+      
+      {/* Mobile Header */}
+      <div className="w-full max-w-md flex justify-between items-center mb-8 md:hidden">
+        <span className="text-2xl font-bold text-slate-900">NovaReceipt</span>
+        <button 
+          onClick={() => setIsSignUp(!isSignUp)}
+          className="text-sm font-medium text-slate-600"
+        >
+          {isSignUp ? "Se connecter" : "S'inscrire"}
+        </button>
+      </div>
+
       <div className="max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center">
         
         {/* Left Side - Marketing */}
@@ -215,7 +227,7 @@ function LoginForm() {
             {isSignUp ? "S'inscrire avec Google" : "Se connecter avec Google"}
           </button>
 
-          <div className="mt-8 text-center text-sm text-slate-600">
+          <div className="mt-8 text-center text-sm text-slate-600 md:block hidden">
             {isSignUp ? "Déjà inscrit(e) ?" : "Pas encore de compte ?"}
             {" "}
             <button
@@ -225,6 +237,14 @@ function LoginForm() {
               {isSignUp ? "Connexion" : "S'inscrire"}
             </button>
           </div>
+
+          {!isSignUp && (
+            <div className="mt-6 text-center md:hidden">
+              <button className="text-sm text-slate-500 hover:text-slate-700">
+                Mot de passe oublié ?
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
