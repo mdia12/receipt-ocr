@@ -7,10 +7,10 @@ import { Receipt } from "@/types/receipts";
 type Period = "day" | "week" | "month" | "year";
 
 interface UsageChartProps {
-  receipts: Receipt[];
+  receipts?: Receipt[];
 }
 
-export default function UsageChart({ receipts }: UsageChartProps) {
+export default function UsageChart({ receipts = [] }: UsageChartProps) {
   const [period, setPeriod] = useState<Period>("month");
 
   const chartData = useMemo(() => {
