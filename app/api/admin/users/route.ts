@@ -58,7 +58,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  await logAdminAction("update_user_role", { target_user_id: userId, new_role: role }, adminCheck.user.email!);
+  await logAdminAction("update_user_role", { target_user_id: userId, new_role: role }, adminCheck.user!.email!);
 
   return NextResponse.json({ success: true });
 }

@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { ScanCompletedEmail } from '@/emails/ScanCompletedEmail';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: Request) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   console.log("🚀 [API] Scan completed email route called");
   try {
     const body = await request.json();

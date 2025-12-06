@@ -49,7 +49,7 @@ export async function POST(request: Request) {
 
   if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 });
 
-  await logAdminAction("create_api_key", { key_id: data.id, target_user_id: userId }, adminCheck.user.email);
+  await logAdminAction("create_api_key", { key_id: data.id, target_user_id: userId }, adminCheck.user!.email!);
 
   // Return the RAW key only once!
   return NextResponse.json({ ...data, rawKey });
@@ -69,7 +69,7 @@ export async function DELETE(request: Request) {
   const supabase = await createClient();
   await supabase.from("api_keys").delete().eq("id", id);
 
-  await logAdminAction("revoke_api_key", { key_id: id }, adminCheck.user.email);
+  await logAdminAction("revoke_api_key", { key_id: id }, adminCheck.user!.email!);
 
   return NextResponse.json({ success: true });
 }
