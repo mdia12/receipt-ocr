@@ -139,7 +139,7 @@ Détails: ${details || "Vérifiez la console"}`);
     // Polling logic: if any receipt is processing, poll every 5s
     const interval = setInterval(() => {
       setReceipts(currentReceipts => {
-        const hasProcessing = currentReceipts.some(r => r.status === 'processing' || r.status === 'queued');
+        const hasProcessing = currentReceipts.some(r => r.status === 'processing');
         if (hasProcessing) {
           console.log("Polling for updates...");
           fetchData();
