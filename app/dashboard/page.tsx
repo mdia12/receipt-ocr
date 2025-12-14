@@ -196,7 +196,7 @@ Détails: ${details || "Vérifiez la console"}`);
   const handleExport = () => {
     const headers = ["Date,Merchant,Category,Amount,Currency,Link"];
     const rows = filteredReceipts.map(r => 
-      `${r.date || ""},"${r.merchant}","${r.category || ""}",${r.amount_total},${r.currency},${window.location.origin}/receipts/${r.id}`
+      `${r.date || ""},"${r.merchant || ""}", "${r.category || ""}",${r.amount ?? 0},${r.currency || ""},${window.location.origin}/receipts/${r.id}`
     );
     
     const csvContent = "data:text/csv;charset=utf-8," + headers.concat(rows).join("\n");
