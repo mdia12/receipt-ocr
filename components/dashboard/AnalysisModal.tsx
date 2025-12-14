@@ -15,7 +15,7 @@ export default function AnalysisModal({ isOpen, onClose, stats, receipts }: Anal
   const categoryTotals: Record<string, number> = {};
   receipts.forEach(r => {
     const cat = r.category || "Autres";
-    categoryTotals[cat] = (categoryTotals[cat] || 0) + (r.amount_total || 0);
+    categoryTotals[cat] = (categoryTotals[cat] || 0) + (r.amount || 0);
   });
 
   const sortedCategories = Object.entries(categoryTotals)
