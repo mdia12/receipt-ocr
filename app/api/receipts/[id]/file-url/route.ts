@@ -68,7 +68,7 @@ export async function GET(
         .from(bucket)
         .createSignedUrl(receipt.file_path, 60);
 
-      if (signError) {
+      if (signError || !data) {
          // Try 'receipts' bucket as fallback
          bucket = "receipts";
          const { data: dataFallback, error: signErrorFallback } = await supabase
@@ -76,7 +76,7 @@ export async function GET(
             .from(bucket)
             .createSignedUrl(receipt.file_path, 60);
          
-         if (signErrorFallback) {
+         if (signErrorFallback || !dataFallback) {
              // Try 'receipts_pdf' as another fallback
              bucket = "receipts_pdf";
              const { data: dataPdf, error: signErrorPdf } = await supabase
@@ -84,7 +84,7 @@ export async function GET(
                 .from(bucket)
                 .createSignedUrl(receipt.file_path, 60);
                 
-             if (signErrorPdf) {
+             if (signErrorPdf || !dataPdf) {
                  console.error("Error generating signed url:", signError);
                  return NextResponse.json({ error: "Could not generate file URL" }, { status: 500 });
              }
