@@ -22,7 +22,7 @@ export async function GET() {
     }
 
     // Map to frontend expected format if necessary, or return as is
-    // Frontend expects: id, date, merchant, category, amount_total, currency, status, file_url, etc.
+    // Frontend expects: id, date, merchant, category, amount, currency, status, file_url, etc.
     // Assuming the DB columns match these names or close enough.
     
     return NextResponse.json({ receipts });

@@ -29,7 +29,7 @@ def test_job_lifecycle():
     print("Marking as ready with receipt data...")
     receipt_data = {
         "merchant": "Test Merchant",
-        "amount_total": 100.0,
+        "amount": 100.0,
         "currency": "EUR",
         "date": "2023-01-01",
         "category": "Test",

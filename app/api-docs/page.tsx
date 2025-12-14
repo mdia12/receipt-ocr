@@ -132,7 +132,7 @@ export default function ApiDocsPage() {
 {`{
   "merchant": "Carrefour Market",
   "date": "2025-12-03",
-  "amount_total": 23.70,
+  "amount": 23.70,
   "currency": "EUR",
   "category": "Groceries",
   "confidence": 0.98,

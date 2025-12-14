@@ -81,7 +81,7 @@ export default function AnonymousUploader() {
     const row = [
       `"${result.merchant || ""}"`,
       `"${result.date || ""}"`,
-      result.amount_total || 0,
+      result.amount || 0,
       `"${result.currency || ""}"`,
       `"${result.category || ""}"`,
       `"${itemsStr}"`
@@ -186,7 +186,7 @@ export default function AnonymousUploader() {
               <div>
                 <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">Montant Total</p>
                 <p className="text-slate-900 font-medium text-lg font-mono">
-                  {result.amount_total?.toFixed(2)} {result.currency}
+                  {result.amount?.toFixed(2)} {result.currency}
                 </p>
               </div>
               <div>

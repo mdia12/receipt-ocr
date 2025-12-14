@@ -120,7 +120,7 @@ export default function ReceiptPage() {
     y += 10;
     doc.text(`Catégorie: ${data.category || "N/A"}`, 14, y);
     y += 10;
-    doc.text(`Montant Total: ${data.amount_total?.toFixed(2) || "0.00"} ${data.currency || "EUR"}`, 14, y);
+    doc.text(`Montant Total: ${data.amount?.toFixed(2) || "0.00"} ${data.currency || "EUR"}`, 14, y);
     y += 20;
 
     // Items
@@ -272,7 +272,7 @@ export default function ReceiptPage() {
                   <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Montant Total</p>
                     <p className="text-3xl font-bold text-slate-900 flex items-baseline gap-1">
-                      {data.amount_total?.toFixed(2) || "0.00"} 
+                      {data.amount?.toFixed(2) || "0.00"} 
                       <span className="text-lg text-slate-500 font-medium">{data.currency || "EUR"}</span>
                     </p>
                   </div>

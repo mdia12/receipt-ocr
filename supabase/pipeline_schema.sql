@@ -8,7 +8,7 @@ create table if not exists public.receipts (
     file_path text not null,
     status text default 'pending', -- pending, processing, success, failed
     merchant text,
-    amount_total numeric,
+    amount numeric,
     currency text,
     date text,
     category text,

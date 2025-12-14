@@ -40,7 +40,7 @@ export default function UsageChart({ receipts = [], monthlyBudget = 2000 }: Usag
     const startBalance = receipts.reduce((sum, r) => {
         if (!r.date) return sum;
         const d = new Date(r.date);
-        return d < startDate ? sum + (r.amount_total || 0) : sum;
+        return d < startDate ? sum + (Number(r.amount) || 0) : sum;
     }, 0);
 
     if (period === "day") {
@@ -60,7 +60,7 @@ export default function UsageChart({ receipts = [], monthlyBudget = 2000 }: Usag
       receipts.forEach(r => {
         if (!r.date) return;
         const d = new Date(r.date);
-        const amount = r.amount_total || 0;
+        const amount = Number(r.amount) || 0;
 
         // Current Day
         if (d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
@@ -95,7 +95,7 @@ export default function UsageChart({ receipts = [], monthlyBudget = 2000 }: Usag
       receipts.forEach(r => {
         if (!r.date) return;
         const d = new Date(r.date);
-        const amount = r.amount_total || 0;
+        const amount = Number(r.amount) || 0;
 
         // Current Week
         const dayIndex = data.findIndex(item => 
@@ -134,7 +134,7 @@ export default function UsageChart({ receipts = [], monthlyBudget = 2000 }: Usag
       receipts.forEach(r => {
         if (!r.date) return;
         const d = new Date(r.date);
-        const amount = r.amount_total || 0;
+        const amount = Number(r.amount) || 0;
 
         // Current Month
         const dayIndex = data.findIndex(item => 
@@ -170,7 +170,7 @@ export default function UsageChart({ receipts = [], monthlyBudget = 2000 }: Usag
       receipts.forEach(r => {
         if (!r.date) return;
         const d = new Date(r.date);
-        const amount = r.amount_total || 0;
+        const amount = Number(r.amount) || 0;
 
         // Current Year
         const monthIndex = data.findIndex(item => 
