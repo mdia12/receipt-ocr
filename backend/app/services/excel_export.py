@@ -12,7 +12,7 @@ class ExcelExportService:
         data = {
             "Date": [receipt.date],
             "Merchant": [receipt.merchant],
-            "Amount": [receipt.amount_total],
+            "Amount": [receipt.amount],
             "VAT": [receipt.vat_amount],
             "Category": [receipt.category],
             "Currency": [receipt.currency]

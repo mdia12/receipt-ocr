@@ -2,6 +2,8 @@ from google.cloud import vision
 from google.oauth2 import service_account
 from app.config import settings
 import os
+import pypdfium2 as pdfium
+import io
 
 class OCRService:
     def __init__(self):
@@ -23,7 +25,58 @@ class OCRService:
         else:
             print("Warning: Google Cloud Vision credentials not found. OCR will fail.")
 
-    def extract_text_from_image(self, image_bytes: bytes) -> str:
+    def extract_text(self, file_bytes: bytes, mime_type: str = None) -> str:
+        """
+        Extract text from file (Image or PDF).
+        """
+        # Simple detection if mime_type is not provided
+        if (mime_type == "application/pdf") or (file_bytes.startswith(b"%PDF")):
+            return self._extract_text_from_pdf(file_bytes)
+        else:
+            return self._extract_text_from_image(file_bytes)
+
+    def _extract_text_from_pdf(self, pdf_bytes: bytes) -> str:
+        try:
+            pdf = pdfium.PdfDocument(pdf_bytes)
+            full_text = []
+            print(f"Processing PDF with {len(pdf)} pages...")
+            
+            for i in range(len(pdf)):
+                page = pdf[i]
+                
+                # Try direct text extraction first (much faster and accurate for digital PDFs)
+                try:
+                    text_page = page.get_textpage()
+                    text = text_page.get_text_range()
+                    text_page.close()
+                    
+                    if text and len(text.strip()) > 20: # Heuristic: if we got some text, use it
+                        print(f"Page {i+1}: Successfully extracted text directly.")
+                        full_text.append(f"--- Page {i+1} (Direct) ---\n{text}")
+                        continue
+                except Exception as e:
+                    print(f"Page {i+1}: Direct extraction failed ({e}), falling back to OCR.")
+
+                print(f"Page {i+1}: Falling back to OCR (Image Rendering).")
+                # Render page to image (scale=2 for better quality)
+                bitmap = page.render(scale=2)
+                pil_image = bitmap.to_pil()
+                
+                # Convert to bytes for Google Vision
+                img_byte_arr = io.BytesIO()
+                pil_image.save(img_byte_arr, format='PNG')
+                img_bytes = img_byte_arr.getvalue()
+                
+                # OCR the image
+                text = self._extract_text_from_image(img_bytes)
+                full_text.append(f"--- Page {i+1} (OCR) ---\n{text}")
+                
+            return "\n".join(full_text)
+        except Exception as e:
+            print(f"PDF Processing Error: {e}")
+            raise Exception(f"Failed to process PDF: {str(e)}")
+
+    def _extract_text_from_image(self, image_bytes: bytes) -> str:
         if not self.client:
             raise Exception("Google Cloud Vision client not initialized")
 

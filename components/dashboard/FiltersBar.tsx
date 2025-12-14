@@ -26,7 +26,7 @@ export default function FiltersBar({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input 
           type="text" 
-          placeholder="Search by merchant, category..." 
+          placeholder="Rechercher par marchand, catégorie..." 
           className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
@@ -41,16 +41,16 @@ export default function FiltersBar({
           value={categoryFilter}
           onChange={(e) => onCategoryChange(e.target.value)}
         >
-          <option value="ALL">All Categories</option>
+          <option value="ALL">Toutes catégories</option>
           <option value="RESTAURANT">Restaurant</option>
-          <option value="COURSES">Groceries</option>
+          <option value="COURSES">Courses</option>
           <option value="TAXI">Taxi</option>
-          <option value="HOTEL">Hotel</option>
+          <option value="HOTEL">Hôtel</option>
           <option value="TRANSPORT">Transport</option>
-          <option value="ESSENCE">Fuel</option>
-          <option value="LOISIR">Leisure</option>
-          <option value="ABONNEMENT">Subscription</option>
-          <option value="AUTRE">Other</option>
+          <option value="ESSENCE">Essence</option>
+          <option value="LOISIR">Loisirs</option>
+          <option value="ABONNEMENT">Abonnement</option>
+          <option value="AUTRE">Autre</option>
         </select>
         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
           <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -65,10 +65,10 @@ export default function FiltersBar({
           value={statusFilter}
           onChange={(e) => onStatusChange(e.target.value)}
         >
-          <option value="ALL">All Status</option>
-          <option value="success">Success</option>
-          <option value="partial">Partial</option>
-          <option value="failed">Failed</option>
+          <option value="ALL">Tous statuts</option>
+          <option value="success">Succès</option>
+          <option value="partial">Partiel</option>
+          <option value="failed">Échec</option>
         </select>
         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
           <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -78,7 +78,7 @@ export default function FiltersBar({
       {/* Date Range (Mock) */}
       <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50 shadow-sm transition-colors">
         <Calendar className="w-4 h-4 text-slate-400" />
-        <span>This Month</span>
+        <span>Ce mois</span>
       </button>
     </div>
   );

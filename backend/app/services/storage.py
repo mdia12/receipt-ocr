@@ -53,10 +53,18 @@ class StorageService:
             print(f"Storage get_url error: {e}")
             raise e
 
+    def download_file(self, bucket: str, path: str) -> bytes:
+        client = self.get_client()
+        try:
+            return client.storage.from_(bucket).download(path)
+        except Exception as e:
+            print(f"Storage download error: {e}")
+            raise e
+
 _storage_service = None
 
 def get_storage_service():
     global _storage_service
-    if _storage_service is None:
+    if not _storage_service:
         _storage_service = StorageService()
     return _storage_service

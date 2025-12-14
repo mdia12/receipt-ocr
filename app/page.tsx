@@ -44,7 +44,7 @@ export default function Home() {
         </div>
         
         <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          Fini la saisie manuelle. NovaReceipt extrait instantanément les données et génère un Excel pour votre comptable.
+          Gagnez 5 heures de productivité par semaine. Finissez avec les saisies manuelles
         </p>
 
         {/* Upload Area */}

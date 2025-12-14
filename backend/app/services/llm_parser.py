@@ -30,7 +30,7 @@ class LLMParserService:
         
         INSTRUCTIONS:
         1. Identify the **Merchant Name**. Ignore generic headers like "FACTURE", "TICKET", "RECEIPT". Look for the business logo text or header.
-        2. Identify the **Total Amount**. Look for "TOTAL", "MONTANT", "PAYÉ".
+        2. Identify the **Total Amount**. Look for "TOTAL", "MONTANT", "PAYÉ", "NET À PAYER", "TOTAL TTC".
         3. Identify the **Date**. Return it in YYYY-MM-DD format.
         4. Identify the **VAT Amount** (TVA). If multiple rates, sum them up.
         5. Determine the **Currency** (EUR, USD, etc.).
@@ -55,7 +55,7 @@ class LLMParserService:
         {{
             "merchant": "string",
             "date": "YYYY-MM-DD" or null,
-            "amount_total": float,
+            "amount": float,
             "currency": "string",
             "vat_amount": float or null,
             "category": "RESTAURANT | COURSES | TAXI | HOTEL | DOMICILE | ESSENCE | LOISIR | ABONNEMENT | TRANSPORT | AUTRE",

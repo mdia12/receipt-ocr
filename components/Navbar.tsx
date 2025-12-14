@@ -68,7 +68,7 @@ export default function Navbar({ user: initialUser }: { user?: User | null }) {
                 className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
               >
                 <LayoutDashboard className="w-4 h-4" />
-                Dashboard
+                Tableau de bord
               </Link>
               <button
                 onClick={handleSignOut}
@@ -148,7 +148,7 @@ export default function Navbar({ user: initialUser }: { user?: User | null }) {
                     onClick={() => setIsOpen(false)}
                   >
                     <LayoutDashboard className="w-4 h-4" />
-                    Dashboard
+                    Tableau de bord
                   </Link>
                   <div className="px-4 py-1.5 text-xs text-slate-400 font-medium truncate border-t border-slate-100 mt-1 pt-2">
                     {user.email}

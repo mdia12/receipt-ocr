@@ -5,20 +5,21 @@ import { Download, Plus, LayoutDashboard } from "lucide-react";
 
 interface DashboardHeaderProps {
   onExport: () => void;
+  onAddReceipt: () => void;
 }
 
-export default function DashboardHeader({ onExport }: DashboardHeaderProps) {
+export default function DashboardHeader({ onExport, onAddReceipt }: DashboardHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
       <div>
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
-          <span>Organization</span>
+          <span>Organisation</span>
           <span>/</span>
-          <span className="font-medium text-slate-900">My Company</span>
+          <span className="font-medium text-slate-900">Ma Société</span>
         </div>
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <LayoutDashboard className="w-6 h-6 text-violet-600" />
-          Overview
+          Vue d'ensemble
         </h1>
       </div>
       
@@ -28,15 +29,15 @@ export default function DashboardHeader({ onExport }: DashboardHeaderProps) {
           className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Export CSV
+          Exporter CSV
         </button>
-        <Link 
-          href="/dashboard/scan"
+        <button 
+          onClick={onAddReceipt}
           className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-medium transition-colors shadow-lg shadow-violet-500/20"
         >
           <Plus className="w-4 h-4" />
-          New Scan
-        </Link>
+          Nouveau Scan
+        </button>
       </div>
     </div>
   );

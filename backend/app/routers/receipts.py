@@ -13,18 +13,18 @@ async def list_receipts(limit: int = 50, user_id: Optional[str] = None):
     
     results = []
     for job in jobs:
-        receipt_data = job.get("receipt_data") or {}
+        # The jobs service returns rows from 'receipts' table
         results.append({
-            "id": job["job_id"],
-            "created_at": job["created_at"],
-            "merchant": receipt_data.get("merchant", "Unknown"),
-            "date": receipt_data.get("date"),
-            "amount_total": receipt_data.get("amount_total"),
-            "currency": receipt_data.get("currency"),
-            "category": receipt_data.get("category"),
+            "id": job.get("id"),
+            "created_at": job.get("created_at"),
+            "merchant": job.get("merchant") or "Unknown",
+            "date": job.get("date"),
+            "amount": job.get("amount"),
+            "currency": job.get("currency"),
+            "category": job.get("category"),
             "excel_url": job.get("excel_url"),
             "pdf_url": job.get("pdf_url"),
-            "file_url": job.get("file_url")
+            "file_url": job.get("file_path") # or file_url if generated
         })
         
     return results

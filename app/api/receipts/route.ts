@@ -2,30 +2,30 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
 export async function GET() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!apiUrl) {
-    return NextResponse.json({ error: "Configuration error" }, { status: 500 });
-  }
-
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    let url = `${apiUrl}/receipts?limit=100`;
-    if (user) {
-      url += `&user_id=${user.id}`;
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const backendResponse = await fetch(url, {
-      cache: "no-store"
-    });
+    const { data: receipts, error } = await supabase
+      .from("receipts")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
-    if (!backendResponse.ok) {
-      throw new Error("Failed to fetch receipts");
+    if (error) {
+      console.error("Supabase receipts fetch error:", error);
+      throw error;
     }
 
-    const data = await backendResponse.json();
-    return NextResponse.json(data);
+    // Map to frontend expected format if necessary, or return as is
+    // Frontend expects: id, date, merchant, category, amount_total, currency, status, file_url, etc.
+    // Assuming the DB columns match these names or close enough.
+    
+    return NextResponse.json({ receipts });
   } catch (error) {
     console.error("Receipts fetch error:", error);
     return NextResponse.json({ error: "Failed to fetch receipts" }, { status: 500 });

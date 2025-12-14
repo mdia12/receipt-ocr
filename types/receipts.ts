@@ -6,7 +6,7 @@ export type Receipt = {
   date: string | null;            // ISO string
   merchant: string;
   category: string | null;
-  amount_total: number | null;
+  amount: number | null;
   currency: string | null;
   status: ReceiptStatus;   // success / partial / failed
   file_url: string | null;         // URL du PDF ou de l’image
@@ -23,4 +23,7 @@ export type DashboardStats = {
   topCategory: string | null;
   scansThisMonth: number;
   planLimit: number | null;     // ex: 100 scans
+  averageExpense: number;
+  monthlyBudget: number;
+  budgetUsage: number;
 };

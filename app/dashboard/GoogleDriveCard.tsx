@@ -50,14 +50,14 @@ export function GoogleDriveCard() {
         <div>
           <h3 className="font-semibold text-slate-900">Google Drive</h3>
           <p className="text-sm text-slate-500">
-            {connected ? "Sync active" : "Sync receipts automatically"}
+            {connected ? "Synchro active" : "Synchronisation automatique"}
           </p>
         </div>
       </div>
       <p className="text-sm text-slate-600 mb-4">
         {connected 
-          ? "Your receipts are automatically synced to the 'NovaReceipt' folder in your Google Drive."
-          : "Connect your Google Drive to automatically save all your scanned receipts in a dedicated folder."
+          ? "Vos reçus sont automatiquement synchronisés dans le dossier 'NovaReceipt' de votre Google Drive."
+          : "Connectez votre Google Drive pour sauvegarder automatiquement tous vos reçus scannés dans un dossier dédié."
         }
       </p>
       {connected ? (
