@@ -1,5 +1,6 @@
 import vision from '@google-cloud/vision';
 import { createClient } from '@supabase/supabase-js';
+import { ensureDriveFoldersAndUpload } from './google-drive';
 
 // Initialize Supabase Admin Client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -155,8 +156,6 @@ export async function processReceiptOCR(receiptId: string) {
       .from('receipts')
       .update(updatePayload)
       .eq('id', receiptId);
-
-import { ensureDriveFoldersAndUpload } from './google-drive';
 
     if (updateError) {
       console.error("[OCR] Failed to update receipt", updateError);
