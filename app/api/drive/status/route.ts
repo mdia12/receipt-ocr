@@ -24,9 +24,13 @@ export async function GET() {
     // We consider connected if we have a refresh token OR a valid access token
     const isConnected = !!data.refresh_token; 
     
+    // Check if token is expired (optional, but good for UI)
+    const isExpired = new Date(data.expires_at) < new Date();
+
     return NextResponse.json({ 
         connected: isConnected, 
-        expires_at: data.expires_at 
+        expires_at: data.expires_at,
+        needs_reauth: isConnected && isExpired && !data.refresh_token // Should not happen if logic is correct
     });
 
   } catch (error) {

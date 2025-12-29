@@ -72,7 +72,11 @@ export async function processReceiptOCR(receiptId: string) {
   try {
     // 0. Update status to indicate OCR started
     // We use 'processing' to stay within standard constraints (pending, processing, completed, failed)
-    await supabaseAdmin.from('receipts').update({ status: 'processing' }).eq('id', receiptId);
+    // Also set drive_status to pending initially
+    await supabaseAdmin.from('receipts').update({ 
+        status: 'processing',
+        drive_status: 'pending' 
+    }).eq('id', receiptId);
 
     // 1. Get Receipt Info
     const { data: receipt, error: fetchError } = await supabaseAdmin
@@ -152,6 +156,8 @@ export async function processReceiptOCR(receiptId: string) {
       .update(updatePayload)
       .eq('id', receiptId);
 
+import { ensureDriveFoldersAndUpload } from './google-drive';
+
     if (updateError) {
       console.error("[OCR] Failed to update receipt", updateError);
       
@@ -171,6 +177,17 @@ export async function processReceiptOCR(receiptId: string) {
       }
     } else {
       console.log("[OCR] Receipt updated successfully");
+      
+      // 6. Upload to Google Drive (Async, don't block)
+      // We need the full receipt object with the new data
+      const updatedReceipt = { ...receipt, ...updatePayload };
+      // We reuse the buffer we already downloaded
+      // Determine mime type from file_type or extension
+      const mimeType = receipt.file_type || (receipt.file_path.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+      
+      ensureDriveFoldersAndUpload(updatedReceipt, buffer, mimeType)
+        .then(res => console.log(`[OCR] Drive upload result:`, res))
+        .catch(err => console.error(`[OCR] Drive upload fatal error:`, err));
     }
 
   } catch (error: any) {
