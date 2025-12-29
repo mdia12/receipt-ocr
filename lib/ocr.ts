@@ -177,7 +177,7 @@ export async function processReceiptOCR(receiptId: string) {
     console.error("[OCR] VISION OCR FAILED", error);
     await supabaseAdmin.from('receipts').update({ 
         status: 'failed',
-        // Store error in a field if possible, or just log it
+        raw_json: { error: error.message, stack: error.stack }
     }).eq('id', receiptId);
     throw error; // Re-throw to let caller know
   }

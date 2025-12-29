@@ -17,6 +17,8 @@ export type Receipt = {
   pdf_url?: string | null;
   raw_json?: any;
   extracted_vat?: number | null;
+  vat_amount?: number | null;
+  file_type?: string | null;
 };
 
 export type DashboardStats = {

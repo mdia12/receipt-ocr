@@ -107,6 +107,7 @@ export default function DashboardPage() {
           raw_json: typeof item.raw_json === 'string' ? JSON.parse(item.raw_json) : item.raw_json,
           vat_amount: item.vat_amount,
           extracted_vat: item.extracted_vat, // Map the new column
+          file_type: item.file_type,
           // Store parsed date object for internal calculations if needed, 
           // though we use the string 'date' field for most things currently.
           // We can add a temporary property if we want to be strict about types, 
@@ -314,12 +315,56 @@ Détails: ${details || "Vérifiez la console"}`);
     document.body.removeChild(link);
   };
 
+  const handleExportAccounting = () => {
+    const headers = [
+      "Date", "Merchant", "Category", "Amount_TTC", "VAT", "Amount_HT", 
+      "Currency", "Status", "Document_Type", "Receipt_ID", "Month", "Year", 
+      "Receipt_URL", "File_URL"
+    ];
+    
+    const rows = filteredReceipts.map(r => {
+      const vat = r.extracted_vat ?? r.vat_amount ?? "";
+      const amountHT = (r.amount != null && vat !== "") ? (r.amount - Number(vat)).toFixed(2) : "";
+      const docType = r.file_type?.includes("pdf") ? "pdf" : (r.file_type?.includes("image") ? "image" : "unknown");
+      const month = r.date ? r.date.slice(0, 7) : "";
+      const year = r.date ? r.date.slice(0, 4) : "";
+      const receiptUrl = `${window.location.origin}/receipts/${r.id}`;
+      
+      return [
+        r.date || "",
+        `"${r.merchant || ""}"`,
+        `"${r.category || ""}"`,
+        r.amount ?? 0,
+        vat,
+        amountHT,
+        r.currency || "EUR",
+        r.status,
+        docType,
+        r.id,
+        month,
+        year,
+        receiptUrl,
+        r.file_url || ""
+      ].join(",");
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `export_compta_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-6 md:p-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
         
         <DashboardHeader 
           onExport={handleExport} 
+          onExportAccounting={handleExportAccounting}
           onAddReceipt={() => setIsUploadModalOpen(true)}
         />
         
