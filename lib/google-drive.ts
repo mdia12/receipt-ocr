@@ -8,6 +8,15 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 
+// ALLOWED MIME TYPES
+const ALLOWED_MIME_TYPES = [
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp'
+];
+
 interface DriveToken {
   access_token: string;
   refresh_token: string;
@@ -230,6 +239,16 @@ async function uploadReceiptFileToDrive(
 export async function ensureDriveFoldersAndUpload(receipt: any, fileBuffer: Buffer, mimeType: string) {
   try {
     console.log(`[Drive] Starting upload process for receipt ${receipt.id}`);
+
+    // --- NEW: MIME TYPE VALIDATION ---
+    if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+        console.warn(`[Drive] Skipped upload: Unsupported MIME type ${mimeType}`);
+        await supabaseAdmin.from('receipts').update({ 
+            drive_status: 'failed',
+            drive_error: 'UNSUPPORTED_FILE_TYPE'
+        }).eq('id', receipt.id);
+        return { success: false, reason: 'unsupported_file_type' };
+    }
     
     // 0. Check if user has Drive connected
     const { data: tokenData, error: tokenError } = await supabaseAdmin
@@ -262,7 +281,14 @@ export async function ensureDriveFoldersAndUpload(receipt: any, fileBuffer: Buff
     // Format: YYYY-MM-DD_Merchant_AmountCurrency_ID.ext
     const safeMerchant = (receipt.merchant || 'Unknown').replace(/[^a-z0-9]/gi, '_').substring(0, 30);
     const amountStr = receipt.amount ? `${receipt.amount.toFixed(2)}${receipt.currency || 'EUR'}` : 'NoAmount';
-    const ext = mimeType === 'application/pdf' ? 'pdf' : 'jpg'; // Simplified
+    
+    // Fallback extension logic
+    let ext = 'bin';
+    if (mimeType === 'application/pdf') ext = 'pdf';
+    else if (mimeType === 'image/png') ext = 'png';
+    else if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') ext = 'jpg';
+    else if (mimeType === 'image/webp') ext = 'webp';
+
     const fileName = `${date}_${safeMerchant}_${amountStr}_${receipt.id.slice(0,8)}.${ext}`;
 
     // 5. Upload
