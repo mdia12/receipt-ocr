@@ -2,19 +2,22 @@ import vision from '@google-cloud/vision';
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase Admin Client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error("Missing Supabase credentials for OCR worker");
 }
 
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+// Create client only if keys are present to avoid build-time errors
+const supabaseAdmin = (supabaseUrl && supabaseServiceKey) 
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+  : null;
 
 // Initialize Google Vision Client
 function getVisionClient() {
@@ -61,6 +64,10 @@ export async function testVisionConnection() {
 
 export async function processReceiptOCR(receiptId: string) {
   console.log(`[OCR] Starting processing for receipt: ${receiptId}`);
+
+  if (!supabaseAdmin) {
+    throw new Error("Supabase Admin client not initialized. Missing credentials.");
+  }
 
   try {
     // 0. Update status to indicate OCR started
