@@ -4,11 +4,14 @@ import { createClient } from "@/utils/supabase/server";
 export async function GET() {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (!user) {
+    if (authError || !user) {
+      console.log("Auth check failed:", authError?.message || "No user found");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    console.log(`Fetching receipts for user: ${user.id}`);
 
     const { data: receipts, error } = await supabase
       .from("receipts")
@@ -20,6 +23,8 @@ export async function GET() {
       console.error("Supabase receipts fetch error:", error);
       throw error;
     }
+
+    console.log(`Fetched ${receipts?.length || 0} receipts for user ${user.id}`);
 
     // Map to frontend expected format if necessary, or return as is
     // Frontend expects: id, date, merchant, category, amount, currency, status, file_url, etc.

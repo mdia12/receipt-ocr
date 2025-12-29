@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Receipt, DashboardStats } from "@/types/receipts";
+import { parseAmount, normalizeDate } from "@/lib/receipts/normalize";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import KpiCards from "@/components/dashboard/KpiCards";
 import UsageChart from "@/components/dashboard/UsageChart";
@@ -20,6 +21,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
     totalExpenses: 0,
     totalReceipts: 0,
+    totalVAT: 0,
     topCategory: null,
     scansThisMonth: 0,
     planLimit: 50, // Mock limit
@@ -28,6 +30,9 @@ export default function DashboardPage() {
     budgetUsage: 0
   });
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(false);
+  const isAuthErrorRef = useRef(false);
+  const isFetchingRef = useRef(false);
 
   // Filters State
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,50 +47,111 @@ export default function DashboardPage() {
 
   // Fetch Data
   const fetchData = async () => {
+    if (isAuthErrorRef.current || isFetchingRef.current) return;
+    isFetchingRef.current = true;
+
     try {
       // Don't set loading to true on every poll to avoid flickering
       // setLoading(true); 
       console.log("Fetching receipts...");
-      const receiptsRes = await fetch("/api/receipts");
+      const receiptsRes = await fetch("/api/receipts", {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (receiptsRes.status === 401) {
+        console.warn("Session expired or unauthorized.");
+        isAuthErrorRef.current = true;
+        setAuthError(true);
+        setLoading(false);
+        return;
+      }
 
       if (!receiptsRes.ok) throw new Error("Failed to fetch receipts");
       
       const json = await receiptsRes.json();
       const data = json.receipts || []; // Handle { receipts: [...] } format
-      console.log("Receipts data received:", data);
       
+      // DEBUG: Log keys of first receipt to identify correct fields
+      if (data.length > 0) {
+        console.log("Sample receipt keys:", Object.keys(data[0]));
+        console.log("Sample receipt raw:", data[0]);
+      }
+
       // Map backend data to frontend Receipt type
-      const mappedReceipts: Receipt[] = data.map((item: any) => ({
-        id: item.id,
-        userId: item.user_id || "current_user",
-        date: item.date || item.created_at,
-        merchant: item.merchant || "Unknown Merchant",
-        category: item.category || "Uncategorized",
-        amount: item.amount, // Keep null if null
-        currency: item.currency || "EUR",
-        status: item.status || "processing", // Use actual status
-        file_url: item.pdf_url || item.excel_url || item.file_path || null,
-        created_at: item.created_at,
-        // Keep original fields if needed
-        excel_url: item.excel_url,
-        pdf_url: item.pdf_url,
-        raw_json: item.raw_json
-      }));
+      const mappedReceipts: Receipt[] = data.map((item: any) => {
+        // Prioritize fields based on common DB column names
+        const rawAmount = item.amount ?? item.total ?? item.total_amount ?? item.total_ttc ?? item.montant ?? item.price;
+        const rawDate = item.date ?? item.receipt_date ?? item.issued_at ?? item.created_at;
+        
+        const parsedAmount = parseAmount(rawAmount);
+        const dateObj = normalizeDate(rawDate);
+        
+        // Format date for display (YYYY-MM-DD)
+        const displayDate = dateObj ? dateObj.toISOString().split('T')[0] : (item.created_at ? item.created_at.split('T')[0] : null);
+
+        return {
+          id: item.id,
+          userId: item.user_id || "current_user",
+          date: displayDate, 
+          merchant: item.merchant || "Unknown Merchant",
+          category: item.category || "Uncategorized",
+          amount: parsedAmount, 
+          currency: item.currency || "EUR",
+          status: item.status || "processing",
+          file_url: item.pdf_url || item.excel_url || item.file_path || null,
+          created_at: item.created_at,
+          excel_url: item.excel_url,
+          pdf_url: item.pdf_url,
+          raw_json: typeof item.raw_json === 'string' ? JSON.parse(item.raw_json) : item.raw_json,
+          vat_amount: item.vat_amount,
+          extracted_vat: item.extracted_vat, // Map the new column
+          // Store parsed date object for internal calculations if needed, 
+          // though we use the string 'date' field for most things currently.
+          // We can add a temporary property if we want to be strict about types, 
+          // but 'date' string is standard in the Receipt type.
+          _dateObj: dateObj 
+        };
+      });
 
       setReceipts(mappedReceipts);
 
       // Calculate Stats
       // Only count successful receipts with valid amount
-      const validReceipts = mappedReceipts.filter(r => r.status === 'success' && r.amount !== null);
-      const totalExpenses = validReceipts.reduce((sum, r) => sum + (r.amount || 0), 0);
+      const validReceipts = mappedReceipts.filter(r => 
+        ['success', 'completed'].includes(r.status.toLowerCase()) && 
+        r.amount !== null && 
+        r.amount > 0
+      );
+      
+      // Check for unparsable data warning
       const totalReceipts = mappedReceipts.length;
+      const totalExpenses = validReceipts.reduce((sum, r) => sum + (r.amount || 0), 0);
+      
+      // Calculate Total VAT
+      // We use extracted_vat if available, otherwise fallback to raw_json.extracted_vat
+      const totalVAT = validReceipts.reduce((sum, r) => {
+          const vat = r.extracted_vat ?? r.raw_json?.extracted_vat ?? 0;
+          return sum + (typeof vat === 'number' ? vat : 0);
+      }, 0);
+      
+      // Only warn if we have SUCCESSFUL receipts but 0 expenses
+      const successfulReceiptsCount = mappedReceipts.filter(r => ['success', 'completed'].includes(r.status.toLowerCase())).length;
+      
+      if (successfulReceiptsCount > 0 && totalExpenses === 0) {
+         console.warn("Warning: Receipts found but total expenses is 0. Check date/amount parsing.");
+      }
       const averageExpense = validReceipts.length > 0 ? totalExpenses / validReceipts.length : 0;
       
       // Mock Budget Logic
       const monthlyBudget = stats.monthlyBudget; // Keep current budget
       const currentMonthExpenses = validReceipts
         .filter(r => {
-          const d = new Date(r.date || r.created_at);
+          // Use the robustly parsed date object if available, otherwise fallback
+          const d = (r as any)._dateObj || new Date(r.date || r.created_at);
+          if (!d || isNaN(d.getTime())) return false;
+          
           const now = new Date();
           return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
         })
@@ -111,18 +177,29 @@ export default function DashboardPage() {
         ...prev,
         totalExpenses,
         totalReceipts,
+        totalVAT,
         topCategory,
         scansThisMonth,
         averageExpense,
         budgetUsage
       }));
+      
+      // UI Fallback for unparsable data
+      if (totalReceipts > 0 && totalExpenses === 0) {
+        // You might want to set a state here to show a warning banner in the UI
+        // For now, we'll just log it as requested, but let's add a small toast or alert if needed
+        // or just rely on the console warning added above.
+      }
 
     } catch (error) {
       console.error("Error loading dashboard data:", error);
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
     }
   };
+
+      
 
   useEffect(() => {
     // Check for errors in URL
@@ -135,21 +212,21 @@ Détails: ${details || "Vérifiez la console"}`);
     }
 
     fetchData();
+  }, []);
 
-    // Polling logic: if any receipt is processing, poll every 5s
+  // Polling logic
+  useEffect(() => {
+    const hasProcessing = receipts.some(r => r.status === 'processing');
+    
+    if (!hasProcessing) return;
+
     const interval = setInterval(() => {
-      setReceipts(currentReceipts => {
-        const hasProcessing = currentReceipts.some(r => r.status === 'processing');
-        if (hasProcessing) {
-          console.log("Polling for updates...");
-          fetchData();
-        }
-        return currentReceipts;
-      });
+      console.log("Polling for updates...");
+      fetchData();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [receipts]);
 
   // Filter Logic
   const filteredReceipts = receipts.filter(r => {
@@ -169,10 +246,24 @@ Détails: ${details || "Vérifiez la console"}`);
     setIsDrawerOpen(true);
   };
 
-  const handleReprocess = (receipt: Receipt) => {
+  const handleReprocess = async (receipt: Receipt) => {
     console.log("Reprocessing receipt:", receipt.id);
-    // TODO: Implement reprocess logic
-    alert("Fonctionnalité de retraitement bientôt disponible !");
+    try {
+      const res = await fetch(`/api/receipts/${receipt.id}/reprocess`, {
+        method: "POST"
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to trigger reprocess");
+      }
+      
+      alert("Retraitement terminé avec succès !");
+      fetchData(); // Refresh list
+    } catch (error: any) {
+      console.error("Reprocess error:", error);
+      alert(`Erreur: ${error.message}`);
+    }
   };
 
   const handleDelete = (receipt: Receipt) => {
@@ -192,6 +283,20 @@ Détails: ${details || "Vérifiez la console"}`);
       budgetUsage: prev.totalExpenses > 0 ? (prev.totalExpenses / newBudget) * 100 : 0
     }));
   };
+
+  if (authError) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-md text-center">
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">Session expirée</h2>
+          <p className="text-slate-600 mb-6">Votre session a expiré. Veuillez vous reconnecter pour accéder à vos reçus.</p>
+          <a href="/login" className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Se connecter
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const handleExport = () => {
     const headers = ["Date,Merchant,Category,Amount,Currency,Link"];
@@ -217,6 +322,22 @@ Détails: ${details || "Vérifiez la console"}`);
           onExport={handleExport} 
           onAddReceipt={() => setIsUploadModalOpen(true)}
         />
+        
+        {/* DEBUG UI */}
+        {receipts.some(r => ['success', 'completed'].includes(r.status.toLowerCase())) && stats.totalExpenses === 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-sm text-amber-800">
+            <p className="font-bold flex items-center gap-2">
+              ⚠️ Attention: Reçus détectés mais montant total à 0€
+            </p>
+            <p className="mt-1">
+              Cela indique probablement un problème de parsing des montants ou des dates.
+            </p>
+            <div className="mt-2 bg-white p-2 rounded border border-amber-100 font-mono text-xs overflow-auto">
+              <p>Exemple de reçu brut (1er élément):</p>
+              <pre>{JSON.stringify(receipts[0], null, 2)}</pre>
+            </div>
+          </div>
+        )}
         
         <KpiCards stats={stats} onUpdateBudget={handleUpdateBudget} />
         

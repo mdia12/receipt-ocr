@@ -15,11 +15,14 @@ export type Receipt = {
   items?: any[];
   excel_url?: string | null;
   pdf_url?: string | null;
+  raw_json?: any;
+  extracted_vat?: number | null;
 };
 
 export type DashboardStats = {
   totalExpenses: number;
   totalReceipts: number;
+  totalVAT: number; // New field
   topCategory: string | null;
   scansThisMonth: number;
   planLimit: number | null;     // ex: 100 scans

@@ -24,6 +24,10 @@ export default function ReceiptsTable({
   const [loadingFileId, setLoadingFileId] = useState<string | null>(null);
 
   const totalAmount = receipts.reduce((sum, r) => sum + (r.amount || 0), 0);
+  const totalVAT = receipts.reduce((sum, r) => {
+    const vat = r.extracted_vat ?? r.raw_json?.extracted_vat ?? 0;
+    return sum + Number(vat);
+  }, 0);
 
 
   const handleOpenFile = async (e: React.MouseEvent, receiptId: string) => {
@@ -72,6 +76,7 @@ export default function ReceiptsTable({
               <th className="px-6 py-4 font-medium">Marchand</th>
               <th className="px-6 py-4 font-medium">Catégorie</th>
               <th className="px-6 py-4 font-medium text-right">Montant</th>
+              <th className="px-6 py-4 font-medium text-right">TVA</th>
               <th className="px-6 py-4 font-medium text-center">Statut</th>
               <th className="px-6 py-4 font-medium text-center">Fichiers</th>
               <th className="px-6 py-4 font-medium text-right">Actions</th>
@@ -104,6 +109,15 @@ export default function ReceiptsTable({
                     `${receipt.amount.toFixed(2)} ${receipt.currency}`
                   ) : (
                     <span className="text-slate-400 italic text-xs">En cours...</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 text-right font-mono text-slate-600 text-xs">
+                  {receipt.extracted_vat !== undefined && receipt.extracted_vat !== null ? (
+                    `${Number(receipt.extracted_vat).toFixed(2)} ${receipt.currency}`
+                  ) : receipt.raw_json && receipt.raw_json.extracted_vat !== undefined && receipt.raw_json.extracted_vat !== null ? (
+                    `${Number(receipt.raw_json.extracted_vat).toFixed(2)} ${receipt.currency}`
+                  ) : (
+                    <span className="text-slate-300">-</span>
                   )}
                 </td>
                 <td className="px-6 py-4 text-center">
@@ -170,6 +184,9 @@ export default function ReceiptsTable({
               <td colSpan={3} className="px-6 py-4 text-right">Total</td>
               <td className="px-6 py-4 text-right font-mono font-bold">
                 {totalAmount.toFixed(2)} EUR
+              </td>
+              <td className="px-6 py-4 text-right font-mono font-bold text-slate-600">
+                {totalVAT.toFixed(2)} EUR
               </td>
               <td colSpan={3}></td>
             </tr>

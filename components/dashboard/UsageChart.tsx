@@ -39,7 +39,10 @@ export default function UsageChart({ receipts = [], monthlyBudget = 2000 }: Usag
 
     const startBalance = receipts.reduce((sum, r) => {
         if (!r.date) return sum;
-        const d = new Date(r.date);
+        // Parse YYYY-MM-DD as local date to avoid timezone shifts
+        const [y, m, d_str] = r.date.split('-').map(Number);
+        const d = new Date(y, m - 1, d_str);
+        
         return d < startDate ? sum + (Number(r.amount) || 0) : sum;
     }, 0);
 
@@ -59,12 +62,27 @@ export default function UsageChart({ receipts = [], monthlyBudget = 2000 }: Usag
 
       receipts.forEach(r => {
         if (!r.date) return;
-        const d = new Date(r.date);
+        const [y, m, d_str] = r.date.split('-').map(Number);
+        const d = new Date(y, m - 1, d_str);
         const amount = Number(r.amount) || 0;
 
         // Current Day
         if (d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
-          const hour = d.getHours();
+          // For "day" view, we might want to use created_at for hour precision if available
+          // But r.date is usually just YYYY-MM-DD. 
+          // If we want hour precision, we need r.created_at or a full datetime in r.date
+          // Fallback: distribute evenly or put at 12h? 
+          // Or check if r.created_at is available and use it for hour.
+          
+          // Let's try to use created_at if available for hour precision
+          let hour = 12; // Default to noon
+          if (r.created_at) {
+            const createdAt = new Date(r.created_at);
+            if (!isNaN(createdAt.getTime())) {
+               hour = createdAt.getHours();
+            }
+          }
+          
           if (data[hour]) data[hour].value += amount;
           currentTotal += amount;
         }
@@ -94,7 +112,8 @@ export default function UsageChart({ receipts = [], monthlyBudget = 2000 }: Usag
 
       receipts.forEach(r => {
         if (!r.date) return;
-        const d = new Date(r.date);
+        const [y, m, d_str] = r.date.split('-').map(Number);
+        const d = new Date(y, m - 1, d_str);
         const amount = Number(r.amount) || 0;
 
         // Current Week
@@ -133,7 +152,8 @@ export default function UsageChart({ receipts = [], monthlyBudget = 2000 }: Usag
 
       receipts.forEach(r => {
         if (!r.date) return;
-        const d = new Date(r.date);
+        const [y, m, d_str] = r.date.split('-').map(Number);
+        const d = new Date(y, m - 1, d_str);
         const amount = Number(r.amount) || 0;
 
         // Current Month
@@ -169,7 +189,8 @@ export default function UsageChart({ receipts = [], monthlyBudget = 2000 }: Usag
 
       receipts.forEach(r => {
         if (!r.date) return;
-        const d = new Date(r.date);
+        const [y, m, d_str] = r.date.split('-').map(Number);
+        const d = new Date(y, m - 1, d_str);
         const amount = Number(r.amount) || 0;
 
         // Current Year

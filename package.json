@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google-cloud/vision": "^5.3.4",
     "@react-email/components": "^1.0.1",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.86.0",
@@ -32,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "^16.0.7",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.16"
   }
 }

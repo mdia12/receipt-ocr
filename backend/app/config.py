@@ -40,6 +40,56 @@ class Settings(BaseSettings):
     # OpenAI
     OPENAI_API_KEY: str | None = None
 
+    def validate_env(self):
+        """
+        Validates that all required environment variables are present.
+        Raises RuntimeError if any critical configuration is missing.
+        """
+        missing = []
+        
+        # Database
+        if not self.SUPABASE_URL:
+            missing.append("SUPABASE_URL: Database connection will fail.")
+        if not self.SUPABASE_SERVICE_KEY:
+            missing.append("SUPABASE_SERVICE_KEY: Database operations will fail.")
+            
+        # OCR (Google Cloud)
+        # Check if either the Base64 content is provided OR the file path is set in env
+        has_google_creds = self.GOOGLE_APPLICATION_CREDENTIALS_BASE64 or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+        if not has_google_creds:
+            missing.append("GOOGLE_APPLICATION_CREDENTIALS_BASE64 or GOOGLE_APPLICATION_CREDENTIALS: OCR will not work.")
+            
+        # LLM (OpenAI)
+        if not self.OPENAI_API_KEY:
+            missing.append("OPENAI_API_KEY: Receipt parsing will not work.")
+            
+        # Storage
+        if not self.BUCKET_RAW:
+            missing.append("BUCKET_RAW: File upload will fail.")
+            
+        # App
+        if not self.FRONTEND_URL:
+            missing.append("FRONTEND_URL: CORS configuration will be incorrect.")
+
+        if missing:
+            print("\n" + "="*50)
+            print("CRITICAL CONFIGURATION ERROR")
+            print("="*50)
+            for m in missing:
+                print(f"❌ {m}")
+            print("="*50 + "\n")
+            raise RuntimeError("Application startup aborted due to missing configuration.")
+
+        # Log success summary
+        print("\n" + "="*50)
+        print("✅ CONFIGURATION VALIDATED")
+        print("="*50)
+        print(f"Database:   Ready ({self.SUPABASE_URL})")
+        print("OCR:        Enabled (Google Cloud Vision)")
+        print("Parsing:    Enabled (OpenAI)")
+        print("Storage:    Ready")
+        print("="*50 + "\n")
+
     def get_google_credentials_dict(self):
         if not self.GOOGLE_APPLICATION_CREDENTIALS_BASE64:
             return None

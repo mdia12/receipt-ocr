@@ -6,6 +6,7 @@ import os
 from openai import OpenAI
 from app.config import settings
 from app.models.receipt import ReceiptData
+from app.utils.parsing import parse_amount, extract_amount_from_text
 
 class LLMParserService:
     def __init__(self):
@@ -31,6 +32,8 @@ class LLMParserService:
         INSTRUCTIONS:
         1. Identify the **Merchant Name**. Ignore generic headers like "FACTURE", "TICKET", "RECEIPT". Look for the business logo text or header.
         2. Identify the **Total Amount**. Look for "TOTAL", "MONTANT", "PAYÉ", "NET À PAYER", "TOTAL TTC".
+           - Return the value as a number (float).
+           - If multiple totals appear, prefer the "Total TTC" or "Net à payer".
         3. Identify the **Date**. Return it in YYYY-MM-DD format.
         4. Identify the **VAT Amount** (TVA). If multiple rates, sum them up.
         5. Determine the **Currency** (EUR, USD, etc.).
@@ -48,14 +51,13 @@ class LLMParserService:
         7. Extract **Line Items**: Identify individual products or services, their price, and VAT if available.
         8. Classify the document type: "invoice", "receipt", or "other".
         9. Provide a **confidence score** (0.0 to 1.0) based on how clear the data is.
-        10. Provide a **category_confidence** score (0.0 to 1.0) indicating how sure you are about the category.
         
         OUTPUT FORMAT:
         Return ONLY a valid JSON object matching this structure:
         {{
             "merchant": "string",
             "date": "YYYY-MM-DD" or null,
-            "amount": float,
+            "amount": float or null,
             "currency": "string",
             "vat_amount": float or null,
             "category": "RESTAURANT | COURSES | TAXI | HOTEL | DOMICILE | ESSENCE | LOISIR | ABONNEMENT | TRANSPORT | AUTRE",
@@ -87,6 +89,22 @@ class LLMParserService:
 
             content = response.choices[0].message.content
             data = json.loads(content)
+            
+            # --- ROBUSTNESS LAYER ---
+            # 1. Parse Amount
+            parsed_amount = parse_amount(data.get("amount"))
+            
+            # 2. Fallback if amount is missing or 0
+            if not parsed_amount:
+                print("LLM failed to extract amount. Trying regex fallback...")
+                fallback_amount = extract_amount_from_text(ocr_text)
+                if fallback_amount:
+                    print(f"Regex fallback found amount: {fallback_amount}")
+                    parsed_amount = fallback_amount
+                else:
+                    print("Regex fallback also failed.")
+            
+            data["amount"] = parsed_amount
             
             return ReceiptData(**data)
 

@@ -25,7 +25,7 @@ export default function KpiCards({ stats, onUpdateBudget }: KpiCardsProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
       {/* Total Expenses */}
       <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex justify-between items-start mb-4">
@@ -42,6 +42,25 @@ export default function KpiCards({ stats, onUpdateBudget }: KpiCardsProps) {
         </p>
         <p className="text-xs text-slate-400 mt-2">
           +1,240.50€ par rapport au mois dernier
+        </p>
+      </div>
+
+      {/* Total VAT */}
+      <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+        <div className="flex justify-between items-start mb-4">
+          <div className="p-2 bg-purple-50 rounded-lg">
+            <Euro className="w-5 h-5 text-purple-600" />
+          </div>
+          <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-full flex items-center gap-1">
+            TVA
+          </span>
+        </div>
+        <p className="text-slate-500 text-sm font-medium">TVA Récupérable</p>
+        <p className="text-2xl font-bold text-slate-900 mt-1">
+          {stats.totalVAT ? stats.totalVAT.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }) : '0,00 €'}
+        </p>
+        <p className="text-xs text-slate-400 mt-2">
+          Cumul sur {stats.totalReceipts} reçus
         </p>
       </div>
 

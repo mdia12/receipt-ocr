@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 export async function GET(
   request: Request,
@@ -14,6 +15,11 @@ export async function GET(
   if (authError || !user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Initialize Admin Client for Storage (Bypass RLS for URL generation)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey);
 
   try {
     // 2. Fetch Receipt
@@ -60,29 +66,27 @@ export async function GET(
       // We try 'receipts_raw' as it is defined in the codebase, fallback to 'receipts'
       let bucket = "receipts_raw";
       
-      // Check if file_path implies a bucket (e.g. "receipts_pdf/file.pdf")
-      // But usually file_path is relative to bucket.
-      
-      let { data, error: signError } = await supabase
+      // Use admin client to generate signed URL to avoid RLS issues
+      let { data, error: signError } = await supabaseAdmin
         .storage
         .from(bucket)
-        .createSignedUrl(receipt.file_path, 60);
+        .createSignedUrl(receipt.file_path, 60 * 60); // 1 hour
 
       if (signError || !data) {
          // Try 'receipts' bucket as fallback
          bucket = "receipts";
-         const { data: dataFallback, error: signErrorFallback } = await supabase
+         const { data: dataFallback, error: signErrorFallback } = await supabaseAdmin
             .storage
             .from(bucket)
-            .createSignedUrl(receipt.file_path, 60);
+            .createSignedUrl(receipt.file_path, 60 * 60);
          
          if (signErrorFallback || !dataFallback) {
              // Try 'receipts_pdf' as another fallback
              bucket = "receipts_pdf";
-             const { data: dataPdf, error: signErrorPdf } = await supabase
+             const { data: dataPdf, error: signErrorPdf } = await supabaseAdmin
                 .storage
                 .from(bucket)
-                .createSignedUrl(receipt.file_path, 60);
+                .createSignedUrl(receipt.file_path, 60 * 60);
                 
              if (signErrorPdf || !dataPdf) {
                  console.error("Error generating signed url:", signError);

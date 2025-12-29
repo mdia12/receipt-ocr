@@ -39,7 +39,7 @@ export default function Navbar({ user: initialUser }: { user?: User | null }) {
 
   return (
     <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between relative">
+      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between relative" suppressHydrationWarning>
         
         {/* Logo */}
         <div className="flex items-center z-20">

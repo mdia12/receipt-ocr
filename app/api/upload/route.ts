@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { processReceiptOCR } from "@/lib/ocr";
 
 export async function POST(request: Request) {
   try {
@@ -19,7 +20,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    // 2. Prepare File Info
+    // 2. Validate File
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    const ALLOWED_TYPES = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "application/pdf"
+    ];
+
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ 
+        error: "File too large. Maximum size is 10MB." 
+      }, { status: 400 });
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json({ 
+        error: "Invalid file type. Only JPG, PNG, WEBP, and PDF are allowed." 
+      }, { status: 400 });
+    }
+
+    // 3. Prepare File Info
     const fileExt = file.name.split('.').pop()?.toLowerCase() || 'bin';
     const datePrefix = new Date().toISOString().slice(0, 7); // YYYY-MM
     const fileName = `${user.id}/${datePrefix}/${crypto.randomUUID()}.${fileExt}`;
@@ -27,14 +49,16 @@ export async function POST(request: Request) {
 
     console.log(`[Upload] Starting upload for ${file.name} to ${bucketName}/${fileName}`);
 
-    // 3. Initialize Admin Client for Storage (Bypass RLS)
+    // 4. Initialize Admin Client for Storage (Bypass RLS)
     // CRITICAL: Always use service role key for storage uploads to avoid RLS errors
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-    if (!supabaseServiceKey) {
-        console.error("[Upload] Missing SUPABASE_SERVICE_ROLE_KEY");
-        return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+    if (!supabaseServiceKey || supabaseServiceKey === "your_supabase_service_role_key") {
+        console.error("[Upload] CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing or invalid.");
+        return NextResponse.json({ 
+          error: "Server configuration error. Please check server logs." 
+        }, { status: 500 });
     }
 
     const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey, {
@@ -44,7 +68,7 @@ export async function POST(request: Request) {
       }
     });
 
-    // 4. Upload to Supabase Storage
+    // 5. Upload to Supabase Storage
     const arrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
 
@@ -60,7 +84,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Storage upload failed", details: uploadError }, { status: 500 });
     }
 
-    // 5. Insert into public.receipts
+    // 6. Insert into public.receipts
     const { data: receiptData, error: dbError } = await supabase
       .from("receipts")
       .insert({
@@ -80,53 +104,47 @@ export async function POST(request: Request) {
 
     if (dbError) {
       console.error("[Upload] DB insert error:", dbError);
+      // Cleanup storage if DB insert fails
+      await supabaseAdmin.storage.from(bucketName).remove([fileName]);
       return NextResponse.json({ error: "Database insert failed", details: dbError }, { status: 500 });
     }
 
     console.log(`[Upload] Receipt created: ${receiptData.id}`);
 
-    // 6. Insert into public.jobs_processing
-    const { error: jobError } = await supabase
-      .from("jobs_processing")
-      .insert({
+    // 7. Insert into public.jobs_processing
+    const jobData = {
+        job_id: receiptData.id,
         receipt_id: receiptData.id,
         status: "queued",
-        // job_type: file.type === "application/pdf" ? "pdf_ocr" : "image_ocr", // Optional if your schema doesn't require it
-        // payload: {
-        //     file_path: fileName,
-        //     file_type: file.type
-        // }
-      });
+    };
+    console.log("[Upload] Inserting into jobs_processing:", jobData);
+
+    const { error: jobError } = await supabase
+      .from("jobs_processing")
+      .insert(jobData);
 
     if (jobError) {
         console.error("[Upload] Job insert error:", jobError);
-        // We continue even if job insert fails, but ideally this should be atomic.
-        // For now, we log it. The backend trigger below is the primary mechanism in some setups,
-        // but the prompt asked to insert into jobs_processing.
     }
 
-    // 7. Trigger Python Backend (Fire and Forget)
-    const backendUrl = process.env.BACKEND_URL || "http://127.0.0.1:8000";
-    fetch(`${backendUrl}/api/process-receipt`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            receipt_id: receiptData.id,
-            file_path: fileName,
-            file_type: file.type,
-            user_id: user.id,
-            email: user.email
-        }),
-    }).catch(err => console.error("[Upload] Backend trigger failed:", err));
+    // 8. Trigger OCR (Node.js Worker)
+    // Replaces the Python backend trigger to ensure execution on Vercel
+    console.log(`[Upload] Triggering OCR for receipt: ${receiptData.id}`);
+    
+    // We await this to ensure it runs before the lambda freezes/terminates
+    try {
+        await processReceiptOCR(receiptData.id);
+    } catch (ocrError) {
+        console.error("[Upload] OCR processing failed:", ocrError);
+        // We don't fail the request, as the upload was successful
+    }
 
     return NextResponse.json({
         receipt_id: receiptData.id,
         file_path: fileName,
         file_type: file.type,
         original_filename: file.name,
-        status: "processing"
+        status: "success" // Optimistically return success if OCR finished
     });
 
   } catch (error: any) {

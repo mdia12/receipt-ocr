@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import vision
 import os
 import base64
+import tempfile
 
 # --- Relative Imports ---
 from .config import settings
@@ -18,14 +19,21 @@ if encoded_key:
     try:
         decoded_key = base64.b64decode(encoded_key).decode("utf-8")
         # Write to a temporary file
-        with open("/tmp/gcp_key.json", "w") as f:
+        temp_dir = tempfile.gettempdir()
+        key_path = os.path.join(temp_dir, "gcp_key.json")
+        with open(key_path, "w") as f:
             f.write(decoded_key)
         # Set the environment variable that Google Client libraries look for
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/gcp_key.json"
-        print("Successfully decoded and set GOOGLE_APPLICATION_CREDENTIALS")
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = key_path
+        print(f"Successfully decoded and set GOOGLE_APPLICATION_CREDENTIALS to {key_path}")
     except Exception as e:
         print(f"Failed to decode GOOGLE_APPLICATION_CREDENTIALS_BASE64: {e}")
-# -------------------------------------------------
+        # We don't raise here, we let validate_env handle the missing requirement if needed, 
+        # or it might fail later if this was the only way to get creds.
+
+# --- Environment Validation ---
+settings.validate_env()
+# ------------------------------
 
 app = FastAPI(
     title="NovaReceipt API",

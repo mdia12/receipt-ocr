@@ -1,4 +1,4 @@
-export type ReceiptStatus = "processing" | "completed" | "failed";
+export type ReceiptStatus = "processing" | "success" | "failed";
 
 export interface ReceiptItem {
   description: string;

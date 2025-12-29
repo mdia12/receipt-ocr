@@ -40,9 +40,9 @@ export default function ReceiptTable({ receipts }: ReceiptTableProps) {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    {receipt.status === "completed" && (
+                    {(receipt.status === "completed" || receipt.status === "success") && (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20">
-                        <CheckCircle className="w-3 h-3" /> Completed
+                        <CheckCircle className="w-3 h-3" /> Success
                       </span>
                     )}
                     {receipt.status === "processing" && (

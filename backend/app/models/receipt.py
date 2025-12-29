@@ -23,7 +23,7 @@ class ReceiptItem(BaseModel):
 class ReceiptData(BaseModel):
     merchant: str = Field(..., description="The name of the merchant or business.")
     date: Optional[str] = Field(None, description="The date of the transaction in ISO format YYYY-MM-DD.")
-    amount: float = Field(..., description="The total amount paid.")
+    amount: Optional[float] = Field(None, description="The total amount paid.")
     currency: str = Field("EUR", description="The currency of the transaction (e.g., EUR, USD, GBP).")
     vat_amount: Optional[float] = Field(None, description="The total VAT amount if present.")
     category: ExpenseCategory = Field(ExpenseCategory.AUTRE, description="Expense category.")

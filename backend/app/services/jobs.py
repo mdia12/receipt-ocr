@@ -27,11 +27,18 @@ class JobsService:
         try:
             self.supabase.table(self.table).update({"status": status}).eq("id", job_id).execute()
             # Also update jobs_processing if it exists
-            self.supabase.table("jobs_processing").update({"status": status, "updated_at": datetime.utcnow().isoformat()}).eq("receipt_id", job_id).execute()
+            try:
+                self.supabase.table("jobs_processing").update({"status": status, "updated_at": datetime.utcnow().isoformat()}).eq("receipt_id", job_id).execute()
+            except Exception as e:
+                # Fallback if updated_at missing
+                if "updated_at" in str(e) or "PGRST204" in str(e) or "42703" in str(e):
+                     self.supabase.table("jobs_processing").update({"status": status}).eq("receipt_id", job_id).execute()
+                else:
+                    print(f"Error updating jobs_processing: {e}")
         except Exception as e:
             print(f"Error updating job status: {e}")
 
-    def mark_job_ready(self, job_id: str, excel_url: str, pdf_url: str, receipt_data: dict = None):
+    def mark_job_ready(self, job_id: str, excel_url: str, pdf_url: str, receipt_data: dict = None, ocr_text: str = None):
         print(f"[{job_id}] Marking job ready. Data: {receipt_data}")
         
         # Prepare update data for public.receipts
@@ -44,10 +51,26 @@ class JobsService:
         
         if receipt_data:
             # Ensure we are using the correct keys matching the DB columns
-            data["raw_json"] = receipt_data
-            data["merchant"] = receipt_data.get("merchant")
-            data["amount"] = receipt_data.get("amount")
-            data["currency"] = receipt_data.get("currency")
+            # Save raw_json with OCR text for debugging
+            raw_json = receipt_data.copy()
+            if ocr_text:
+                raw_json["ocr_text_raw"] = ocr_text
+            
+            data["raw_json"] = raw_json
+            data["merchant"] = receipt_data.get("merchant") or "Unknown Merchant"
+            
+            # Ensure amount is a float
+            amount_val = receipt_data.get("amount")
+            if amount_val is not None:
+                try:
+                    data["amount"] = float(amount_val)
+                except (ValueError, TypeError):
+                    print(f"[{job_id}] Error converting amount {amount_val} to float. Setting to 0.0")
+                    data["amount"] = 0.0
+            else:
+                data["amount"] = 0.0
+
+            data["currency"] = receipt_data.get("currency") or "EUR"
             data["date"] = receipt_data.get("date")
             data["category"] = receipt_data.get("category")
             
@@ -56,19 +79,37 @@ class JobsService:
         try:
             # Update public.receipts
             response = self.supabase.table(self.table).update(data).eq("id", job_id).execute()
-            print(f"[{job_id}] Receipts table updated. Response: {response}")
+            print(f"[{job_id}] Receipts table updated. Rows affected: {len(response.data) if response.data else 0}")
             
             # Update public.jobs_processing
-            self.supabase.table("jobs_processing").update({
-                "status": "completed", 
-                "updated_at": datetime.utcnow().isoformat()
-            }).eq("receipt_id", job_id).execute()
-            print(f"[{job_id}] Jobs processing table updated to completed.")
+            try:
+                self.supabase.table("jobs_processing").update({
+                    "status": "completed", 
+                    "updated_at": datetime.utcnow().isoformat()
+                }).eq("receipt_id", job_id).execute()
+                print(f"[{job_id}] Jobs processing table updated to completed.")
+            except Exception as e:
+                if "updated_at" in str(e) or "PGRST204" in str(e) or "42703" in str(e):
+                    self.supabase.table("jobs_processing").update({"status": "completed"}).eq("receipt_id", job_id).execute()
+                else:
+                    print(f"[{job_id}] Error updating jobs_processing: {e}")
             
         except Exception as e:
             print(f"[{job_id}] Error marking job ready: {e}")
-            # Try to log the error to the job
-            self.mark_job_error(job_id, f"Failed to save results: {str(e)}")
+            # Fallback: remove columns that might be missing
+            if "excel_url" in str(e) or "pdf_url" in str(e) or "updated_at" in str(e) or "PGRST204" in str(e) or "42703" in str(e):
+                print(f"[{job_id}] Retrying update without optional columns...")
+                data.pop("excel_url", None)
+                data.pop("pdf_url", None)
+                data.pop("updated_at", None)
+                try:
+                    self.supabase.table(self.table).update(data).eq("id", job_id).execute()
+                    print(f"[{job_id}] Retry successful.")
+                except Exception as e2:
+                    print(f"[{job_id}] Retry failed: {e2}")
+                    self.mark_job_error(job_id, f"Failed to save results: {str(e2)}")
+            else:
+                self.mark_job_error(job_id, f"Failed to save results: {str(e)}")
 
     def mark_job_error(self, job_id: str, error_message: str):
         print(f"[{job_id}] Marking job error: {error_message}")
@@ -78,10 +119,29 @@ class JobsService:
             "updated_at": datetime.utcnow().isoformat()
         }
         try:
-            self.supabase.table(self.table).update(data).eq("id", job_id).execute()
+            try:
+                self.supabase.table(self.table).update(data).eq("id", job_id).execute()
+            except Exception as e:
+                if "updated_at" in str(e) or "PGRST204" in str(e) or "42703" in str(e):
+                    data.pop("updated_at", None)
+                    self.supabase.table(self.table).update(data).eq("id", job_id).execute()
+                else:
+                    raise e
+            
             # Update jobs_processing
-            self.supabase.table("jobs_processing").update({
-                "status": "failed", 
+            try:
+                self.supabase.table("jobs_processing").update({
+                    "status": "failed", 
+                    "updated_at": datetime.utcnow().isoformat()
+                }).eq("receipt_id", job_id).execute()
+            except Exception as e:
+                 if "updated_at" in str(e) or "PGRST204" in str(e) or "42703" in str(e):
+                    self.supabase.table("jobs_processing").update({"status": "failed"}).eq("receipt_id", job_id).execute()
+                 else:
+                    print(f"[{job_id}] Error updating jobs_processing error status: {e}")
+
+        except Exception as e:
+            print(f"[{job_id}] Error marking job error: {e}") 
                 "last_error": error_message, 
                 "updated_at": datetime.utcnow().isoformat()
             }).eq("receipt_id", job_id).execute()

@@ -8,12 +8,13 @@ const getSafeFilename = (receipt: Receipt, ext: string) => {
 };
 
 const downloadReceiptAsCSV = (receipt: Receipt) => {
-  const headers = ["id", "merchant", "date", "amount", "currency", "category", "status"];
+  const headers = ["id", "merchant", "date", "amount", "tva", "currency", "category", "status"];
   const row = [
     receipt.id,
     receipt.merchant,
     receipt.date,
     receipt.amount,
+    receipt.raw_json?.extracted_vat || "",
     receipt.currency,
     receipt.category,
     receipt.status
@@ -173,6 +174,28 @@ export default function ReceiptDrawer({
                 </p>
               </div>
               <div className="space-y-1">
+                <p className="text-xs text-slate-400">TVA (Extraite)</p>
+                <div className="font-medium text-slate-900 font-mono flex items-center gap-2">
+                  {receipt.extracted_vat !== undefined && receipt.extracted_vat !== null
+                    ? (
+                      <>
+                        <span>{Number(receipt.extracted_vat).toFixed(2)} {receipt.currency}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full">DB</span>
+                      </>
+                    )
+                    : receipt.raw_json && receipt.raw_json.extracted_vat !== undefined && receipt.raw_json.extracted_vat !== null
+                    ? (
+                      <>
+                        <span>{Number(receipt.raw_json.extracted_vat).toFixed(2)} {receipt.currency}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded-full">JSON</span>
+                      </>
+                    )
+                    : (
+                      <span className="text-slate-400 italic">Non détectée</span>
+                    )}
+                </div>
+              </div>
+              <div className="space-y-1">
                 <p className="text-xs text-slate-400">Catégorie</p>
                 <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-700">
                   {receipt.category || "Non catégorisé"}
@@ -202,7 +225,9 @@ export default function ReceiptDrawer({
                   merchant: receipt.merchant,
                   amount: receipt.amount,
                   date: receipt.date,
-                  category: receipt.category
+                  category: receipt.category,
+                  extracted_vat: receipt.raw_json?.extracted_vat,
+                  raw_json_present: !!receipt.raw_json
                 }, null, 2)}
               </pre>
             </div>
