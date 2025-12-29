@@ -2,11 +2,6 @@ import io
 import base64
 import os
 from datetime import datetime, timezone
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import Flow
-from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload
 from supabase import create_client, Client
 from app.config import settings
 
@@ -16,7 +11,26 @@ os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 # Initialize Supabase client
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
 
+def is_drive_enabled() -> bool:
+    """Checks if Google Drive dependencies and configuration are available."""
+    try:
+        import google_auth_oauthlib.flow
+        import googleapiclient.discovery
+        import google.oauth2.credentials
+        
+        if not settings.google_client_id or not settings.google_client_secret:
+            return False
+            
+        return True
+    except ImportError:
+        return False
+
 def get_auth_flow(state: str = None):
+    if not is_drive_enabled():
+        raise Exception("Google Drive integration is not enabled (missing deps or config)")
+        
+    from google_auth_oauthlib.flow import Flow
+    
     flow = Flow.from_client_config(
         {
             "web": {
@@ -35,15 +49,22 @@ def get_auth_flow(state: str = None):
 class GoogleDriveService:
     def __init__(self, user_id: str):
         self.user_id = user_id
-        self.creds = self._get_creds()
-        if self.creds:
-            self.service = build('drive', 'v3', credentials=self.creds)
+        self.service = None
+        
+        if is_drive_enabled():
+            self.creds = self._get_creds()
+            if self.creds:
+                from googleapiclient.discovery import build
+                self.service = build('drive', 'v3', credentials=self.creds)
         else:
-            self.service = None
+            print("Warning: Google Drive disabled or missing dependencies")
 
     def _get_creds(self):
         # Fetch tokens from Supabase
         try:
+            from google.oauth2.credentials import Credentials
+            from google.auth.transport.requests import Request
+            
             response = supabase.table("google_drive_tokens").select("*").eq("user_id", self.user_id).single().execute()
             if not response.data:
                 return None

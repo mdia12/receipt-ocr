@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Request, Query
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 import base64
-from app.services.google_drive import GoogleDriveService, get_auth_flow
+from app.services.google_drive import GoogleDriveService, get_auth_flow, is_drive_enabled
 from app.config import settings
 from supabase import create_client, Client
 
@@ -15,6 +15,10 @@ def get_current_user(user_id: str = Query(..., description="The user ID")):
 
 def get_supabase_client():
     return supabase
+
+def check_drive_enabled():
+    if not is_drive_enabled():
+        raise HTTPException(status_code=503, detail="Google Drive integration is not enabled (missing dependencies or configuration)")
 
 class UploadRequest(BaseModel):
     user_id: str
@@ -30,6 +34,9 @@ async def drive_status(
     user = Depends(get_current_user),
     supabase_client = Depends(get_supabase_client),
 ):
+    if not is_drive_enabled():
+        return {"connected": False, "disabled": True}
+
     try:
         print(f"Checking drive status for user_id: {user['id']}")
         # Check if token exists for user
@@ -50,6 +57,7 @@ async def drive_status(
 
 @router.get("/auth/init")
 def auth_init(state: str = "/dashboard"):
+    check_drive_enabled()
     print(f"Initializing auth with state: {state}")
     flow = get_auth_flow(state=state)
     auth_url, _ = flow.authorization_url(
@@ -61,6 +69,7 @@ def auth_init(state: str = "/dashboard"):
 
 @router.post("/auth/exchange")
 async def auth_exchange(request: ExchangeRequest):
+    check_drive_enabled()
     print(f"Exchanging code for user_id: {request.user_id}")
     try:
         flow = get_auth_flow()
@@ -108,6 +117,7 @@ async def auth_exchange(request: ExchangeRequest):
 
 @router.post("/upload")
 async def upload_to_drive(request: UploadRequest):
+    check_drive_enabled()
     # In a real app, we would verify the user's plan here.
     # For example:
     # user = supabase.table("profiles").select("plan").eq("id", request.user_id).single().execute()
