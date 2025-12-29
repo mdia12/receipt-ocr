@@ -17,13 +17,28 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  let error = null;
+
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch (e) {
+    console.error("Layout Error:", e);
+    error = "Configuration Error: Supabase credentials missing or invalid.";
+  }
 
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={`${inter.className} bg-white text-slate-900 antialiased min-h-screen flex flex-col`} suppressHydrationWarning>
-        <Navbar user={user} />
+        {error ? (
+          <div className="bg-red-50 p-4 text-center text-red-600 font-medium">
+            {error}
+          </div>
+        ) : (
+          <Navbar user={user} />
+        )}
 
         {/* Main Content */}
         <main className="flex-1 w-full">
