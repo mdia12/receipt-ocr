@@ -1,31 +1,36 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
-const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-
 export async function GET() {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ connected: false });
+      return NextResponse.json({ connected: false, reason: "No user" });
     }
 
-    // Call FastAPI backend with user_id param
-    const res = await fetch(`${apiBase}/drive/status?user_id=${user.id}`, {
-      cache: "no-store",
+    const { data, error } = await supabase
+        .from("google_drive_tokens")
+        .select("expires_at, refresh_token")
+        .eq("user_id", user.id)
+        .single();
+
+    if (error || !data) {
+        return NextResponse.json({ connected: false, reason: "No token found" });
+    }
+
+    // Check if connected
+    // We consider connected if we have a refresh token OR a valid access token
+    const isConnected = !!data.refresh_token; 
+    
+    return NextResponse.json({ 
+        connected: isConnected, 
+        expires_at: data.expires_at 
     });
 
-    if (!res.ok) {
-      console.error("Drive status backend error:", res.status, await res.text());
-      return NextResponse.json({ connected: false }, { status: 200 });
-    }
-
-    const data = await res.json();
-    return NextResponse.json({ connected: !!data.connected }, { status: 200 });
   } catch (error) {
-    console.error("Drive status fetch error:", error);
-    return NextResponse.json({ connected: false }, { status: 200 });
+    console.error("Drive status check error:", error);
+    return NextResponse.json({ connected: false, reason: "Internal error" }, { status: 500 });
   }
 }

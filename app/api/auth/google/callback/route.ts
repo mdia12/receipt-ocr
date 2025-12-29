@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   const error = searchParams.get("error");
 
   if (error) {
+    console.error("Google Auth Error:", error);
     return NextResponse.redirect(new URL(`/dashboard?error=google_auth_${error}`, request.url));
   }
 
@@ -22,35 +23,67 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL;
-  if (!apiBase) {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/google/callback`;
+
+  if (!clientId || !clientSecret) {
+     console.error("Missing Google Client ID or Secret");
      return NextResponse.redirect(new URL("/dashboard?error=config_error", request.url));
   }
 
   try {
-    // Exchange code via Backend
-    const res = await fetch(`${apiBase}/drive/auth/exchange`, {
+    // Exchange code for tokens
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: JSON.stringify({
+      body: new URLSearchParams({
         code,
-        user_id: user.id
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
       }),
     });
 
-    if (!res.ok) {
-      const errData = await res.json();
-      console.error("Backend Exchange Error:", errData);
-      throw new Error(errData.detail || "Failed to exchange token");
+    const tokens = await tokenResponse.json();
+
+    if (!tokenResponse.ok) {
+      console.error("Token Exchange Error:", tokens);
+      throw new Error(tokens.error_description || "Failed to exchange token");
+    }
+
+    // Calculate expiry
+    const expiresAt = new Date();
+    expiresAt.setSeconds(expiresAt.getSeconds() + tokens.expires_in);
+
+    // Save to Supabase
+    const payload: any = {
+        user_id: user.id,
+        access_token: tokens.access_token,
+        expires_at: expiresAt.toISOString(),
+        updated_at: new Date().toISOString(),
+    };
+
+    if (tokens.refresh_token) {
+        payload.refresh_token = tokens.refresh_token;
+    }
+
+    const { error: dbError } = await supabase
+        .from("google_drive_tokens")
+        .upsert(payload, { onConflict: 'user_id' });
+
+    if (dbError) {
+        console.error("DB Save Error:", dbError);
+        throw new Error("Failed to save tokens");
     }
 
     return NextResponse.redirect(new URL(state, request.url));
 
   } catch (err: any) {
-    console.error(err);
-    const errorMessage = err.message || "Unknown error";
-    return NextResponse.redirect(new URL(`/dashboard?error=auth_failed&details=${encodeURIComponent(errorMessage)}`, request.url));
+    console.error("Callback Error:", err);
+    return NextResponse.redirect(new URL(`/dashboard?error=auth_failed&details=${encodeURIComponent(err.message)}`, request.url));
   }
 }
