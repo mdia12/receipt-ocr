@@ -141,11 +141,6 @@ class JobsService:
                     print(f"[{job_id}] Error updating jobs_processing error status: {e}")
 
         except Exception as e:
-            print(f"[{job_id}] Error marking job error: {e}") 
-                "last_error": error_message, 
-                "updated_at": datetime.utcnow().isoformat()
-            }).eq("receipt_id", job_id).execute()
-        except Exception as e:
             print(f"[{job_id}] Error marking job error: {e}")
 
     def get_all_jobs(self, limit: int = 50, user_id: Optional[str] = None):
