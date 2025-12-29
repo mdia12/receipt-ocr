@@ -1,7 +1,16 @@
 from fastapi import APIRouter, HTTPException
 from app.services.jobs import jobs_service
+from app.services.llm_parser import get_llm_parser_service
 
 router = APIRouter()
+
+@router.get("/health")
+async def health_check():
+    llm_service = get_llm_parser_service()
+    return {
+        "status": "ok",
+        "ai_available": llm_service.is_available()
+    }
 
 @router.get("/status/{job_id}")
 async def check_status(job_id: str):

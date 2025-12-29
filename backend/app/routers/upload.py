@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks,
 from app.services.storage import get_storage_service
 from app.services.jobs import jobs_service
 from app.services.ocr import ocr_service
-from app.services.llm_parser import llm_parser_service
+from app.services.llm_parser import get_llm_parser_service
 from app.services.excel_export import excel_export_service
 from app.services.pdf_export import pdf_export_service
 from app.utils.parsing import parse_amount
@@ -93,7 +93,7 @@ async def process_receipt_job_v2(request: ProcessRequest):
             raise ValueError("OCR_EMPTY: Text too short or empty")
         
         # 2. Parse with LLM
-        receipt_data = llm_parser_service.parse_receipt_with_llm(text)
+        receipt_data = get_llm_parser_service().parse_receipt_with_llm(text)
         log_event("LLM_PARSE", receipt_data.model_dump())
         
         # 3. Normalization & Validation
@@ -177,7 +177,7 @@ async def scan_anonymous(file: UploadFile = File(...)):
         text = ocr_service.extract_text(file_bytes, mime_type=mime_type)
         
         # 2. Parse
-        receipt_data = llm_parser_service.parse_receipt_with_llm(text)
+        receipt_data = get_llm_parser_service().parse_receipt_with_llm(text)
         
         # Ensure amount is float
         if receipt_data.amount is not None:

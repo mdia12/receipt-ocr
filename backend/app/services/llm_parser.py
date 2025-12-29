@@ -11,10 +11,16 @@ from app.utils.parsing import parse_amount, extract_amount_from_text
 class LLMParserService:
     def __init__(self):
         self.client = None
-        if settings.OPENAI_API_KEY:
-            self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
-        else:
-            print("Warning: OPENAI_API_KEY not set. LLM Parser will fail.")
+        try:
+            if settings.OPENAI_API_KEY:
+                self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+            else:
+                print("Warning: OPENAI_API_KEY not set. LLM Parser will be unavailable.")
+        except Exception as e:
+            print(f"Warning: Failed to initialize OpenAI client: {e}")
+
+    def is_available(self) -> bool:
+        return self.client is not None
 
     def parse_receipt_with_llm(self, ocr_text: str) -> ReceiptData:
         if not self.client:
@@ -113,4 +119,10 @@ class LLMParserService:
             # Fallback or re-raise
             raise e
 
-llm_parser_service = LLMParserService()
+_llm_parser_service_instance = None
+
+def get_llm_parser_service() -> LLMParserService:
+    global _llm_parser_service_instance
+    if _llm_parser_service_instance is None:
+        _llm_parser_service_instance = LLMParserService()
+    return _llm_parser_service_instance

@@ -9,7 +9,7 @@ import tempfile
 from .config import settings
 from .routers import upload, status, receipts, drive
 from app.services.ocr import ocr_service
-from app.services.llm_parser import llm_parser_service
+from app.services.llm_parser import get_llm_parser_service
 # ------------------------
 
 # --- Google Cloud Credentials Setup for Render ---
@@ -111,7 +111,7 @@ async def anonymous_scan(file: UploadFile = File(...)):
              return {"error": "No text detected in image"}
         
         # 2. LLM Parsing
-        receipt_data = llm_parser_service.parse_receipt_with_llm(text)
+        receipt_data = get_llm_parser_service().parse_receipt_with_llm(text)
         
         # 3. Return Data (No DB save)
         return receipt_data
