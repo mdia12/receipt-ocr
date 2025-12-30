@@ -131,9 +131,10 @@ export async function processReceipt(receiptId: string) {
   }
 
   // 2. Download file from Storage
+  // Note: Uploads go to 'receipts_raw' bucket
   const { data: fileData, error: downloadError } = await supabaseAdmin
     .storage
-    .from('receipts')
+    .from('receipts_raw')
     .download(receipt.file_path);
 
   if (downloadError || !fileData) {

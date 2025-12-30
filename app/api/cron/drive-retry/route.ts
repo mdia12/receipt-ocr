@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         // Download file
         const { data: fileData, error: downloadError } = await supabaseAdmin
           .storage
-          .from('receipts')
+          .from('receipts_raw')
           .download(receipt.file_path);
 
         if (downloadError || !fileData) {
