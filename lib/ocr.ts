@@ -33,13 +33,13 @@ function parseReceiptText(text: string) {
   let tax = 0;
 
   // 1. Extract Amounts
-  // Look for patterns like 12.34 or 12,34
+  // Look for patterns like 12.34, 12,34, 12.5, 1200
   // We'll collect all valid numbers and try to find the "Total"
-  const priceRegex = /\b\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})\b/g;
+  const priceRegex = /\b\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?\b/g;
   const potentialPrices: number[] = [];
 
   // Keywords that suggest a total line
-  const totalKeywords = ['total', 'montant', 'somme', 'payer', 'ttc'];
+  const totalKeywords = ['total', 'montant', 'somme', 'payer', 'ttc', 'net to pay', 'grand total'];
   let maxPriceFound = 0;
 
   lines.forEach(line => {
@@ -49,7 +49,22 @@ function parseReceiptText(text: string) {
     if (matches) {
       matches.forEach(match => {
         // Normalize: replace , with . and remove spaces
-        const normalized = match.replace(/,/g, '.').replace(/\s/g, '');
+        // Handle 1.234,56 vs 1,234.56
+        // Simple heuristic: if last separator is comma, replace dots with nothing, comma with dot
+        let normalized = match.replace(/\s/g, '');
+        if (normalized.includes(',') && normalized.includes('.')) {
+            if (normalized.lastIndexOf(',') > normalized.lastIndexOf('.')) {
+                // 1.234,56 -> 1234.56
+                normalized = normalized.replace(/\./g, '').replace(',', '.');
+            } else {
+                // 1,234.56 -> 1234.56
+                normalized = normalized.replace(/,/g, '');
+            }
+        } else if (normalized.includes(',')) {
+            // 12,34 -> 12.34
+            normalized = normalized.replace(',', '.');
+        }
+        
         const val = parseFloat(normalized);
         if (!isNaN(val)) {
           potentialPrices.push(val);
@@ -174,8 +189,8 @@ export async function processReceipt(receiptId: string) {
     }
 
     // Update DB with extracted data
-    await supabaseAdmin.from('receipts').update({
-        status: 'processed', // Mark as processed
+    const { error: updateError } = await supabaseAdmin.from('receipts').update({
+        status: 'success', // Mark as success (was processed, which is invalid)
         merchant: extractedData.merchant,
         amount: extractedData.amount,
         currency: extractedData.currency,
@@ -184,6 +199,11 @@ export async function processReceipt(receiptId: string) {
         description: rawText.slice(0, 500), // Store snippet of text
         // raw_json: JSON.stringify(extractedData) // Optional if column exists
     }).eq('id', receiptId);
+
+    if (updateError) {
+        console.error('[OCR] Failed to update receipt status:', updateError);
+        throw new Error(`DB Update failed: ${updateError.message}`);
+    }
 
     // 4. Upload to Google Drive (if connected)
     // We pass the buffer and mime type explicitly
