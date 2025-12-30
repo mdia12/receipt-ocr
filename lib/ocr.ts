@@ -118,79 +118,88 @@ function parseReceiptText(text: string) {
 export async function processReceipt(receiptId: string) {
   console.log(`[OCR] Processing receipt: ${receiptId}`);
 
-  // 1. Fetch receipt metadata
-  const { data: receipt, error } = await supabaseAdmin
-    .from('receipts')
-    .select('*')
-    .eq('id', receiptId)
-    .single();
-
-  if (error || !receipt) {
-    console.error('[OCR] Receipt not found');
-    return;
-  }
-
-  // 2. Download file from Storage
-  // Note: Uploads go to 'receipts_raw' bucket
-  const { data: fileData, error: downloadError } = await supabaseAdmin
-    .storage
-    .from('receipts_raw')
-    .download(receipt.file_path);
-
-  if (downloadError || !fileData) {
-    console.error('[OCR] Failed to download file from storage', downloadError);
-    await supabaseAdmin.from('receipts').update({ 
-        status: 'failed', 
-        description: `Download failed: ${downloadError?.message || 'Unknown error'}` 
-    }).eq('id', receiptId);
-    return;
-  }
-
-  // Convert Blob to Buffer
-  const arrayBuffer = await fileData.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-
-  // 3. Perform OCR
-  let extractedData = { amount: 0, date: null as string | null, merchant: 'Unknown', currency: 'EUR', tax: 0 };
-  let rawText = '';
-
   try {
-    const client = getVisionClient();
-    const [result] = await client.textDetection(buffer);
-    const detections = result.textAnnotations;
-    rawText = detections?.[0]?.description || '';
+    // 1. Fetch receipt metadata
+    const { data: receipt, error } = await supabaseAdmin
+      .from('receipts')
+      .select('*')
+      .eq('id', receiptId)
+      .single();
 
-    if (rawText) {
-        extractedData = parseReceiptText(rawText);
-        console.log(`[OCR] Extracted: Amount=${extractedData.amount}, Tax=${extractedData.tax}, Date=${extractedData.date}`);
-    } else {
-        console.log('[OCR] No text detected by Vision API');
+    if (error || !receipt) {
+      console.error('[OCR] Receipt not found');
+      return;
     }
 
-  } catch (ocrError) {
-      console.error('[OCR] Vision API error:', ocrError);
-      // Continue to allow Drive upload even if OCR fails, but log it
+    // 2. Download file from Storage
+    // Note: Uploads go to 'receipts_raw' bucket
+    const { data: fileData, error: downloadError } = await supabaseAdmin
+      .storage
+      .from('receipts_raw')
+      .download(receipt.file_path);
+
+    if (downloadError || !fileData) {
+      console.error('[OCR] Failed to download file from storage', downloadError);
+      await supabaseAdmin.from('receipts').update({ 
+          status: 'failed', 
+          description: `Download failed: ${downloadError?.message || 'Unknown error'}` 
+      }).eq('id', receiptId);
+      return;
+    }
+
+    // Convert Blob to Buffer
+    const arrayBuffer = await fileData.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // 3. Perform OCR
+    let extractedData = { amount: 0, date: null as string | null, merchant: 'Unknown', currency: 'EUR', tax: 0 };
+    let rawText = '';
+
+    try {
+      const client = getVisionClient();
+      const [result] = await client.textDetection(buffer);
+      const detections = result.textAnnotations;
+      rawText = detections?.[0]?.description || '';
+
+      if (rawText) {
+          extractedData = parseReceiptText(rawText);
+          console.log(`[OCR] Extracted: Amount=${extractedData.amount}, Tax=${extractedData.tax}, Date=${extractedData.date}`);
+      } else {
+          console.log('[OCR] No text detected by Vision API');
+      }
+
+    } catch (ocrError) {
+        console.error('[OCR] Vision API error:', ocrError);
+        // Continue to allow Drive upload even if OCR fails, but log it
+    }
+
+    // Update DB with extracted data
+    await supabaseAdmin.from('receipts').update({
+        status: 'processed', // Mark as processed
+        merchant: extractedData.merchant,
+        amount: extractedData.amount,
+        currency: extractedData.currency,
+        date: extractedData.date,
+        tax: extractedData.tax, // Save extracted tax
+        description: rawText.slice(0, 500), // Store snippet of text
+        // raw_json: JSON.stringify(extractedData) // Optional if column exists
+    }).eq('id', receiptId);
+
+    // 4. Upload to Google Drive (if connected)
+    // We pass the buffer and mime type explicitly
+    // Pass the updated receipt object (merged with extracted data) for better naming
+    const updatedReceipt = { ...receipt, ...extractedData };
+    await ensureDriveFoldersAndUpload(updatedReceipt, buffer, fileData.type);
+
+    console.log(`[OCR] Finished processing ${receiptId}`);
+
+  } catch (error: any) {
+    console.error(`[OCR] Critical error processing receipt ${receiptId}:`, error);
+    await supabaseAdmin.from('receipts').update({ 
+        status: 'failed', 
+        description: `Processing failed: ${error.message || 'Unknown error'}` 
+    }).eq('id', receiptId);
   }
-
-  // Update DB with extracted data
-  await supabaseAdmin.from('receipts').update({
-      status: 'processed', // Mark as processed
-      merchant: extractedData.merchant,
-      amount: extractedData.amount,
-      currency: extractedData.currency,
-      date: extractedData.date,
-      tax: extractedData.tax, // Save extracted tax
-      description: rawText.slice(0, 500), // Store snippet of text
-      // raw_json: JSON.stringify(extractedData) // Optional if column exists
-  }).eq('id', receiptId);
-
-  // 4. Upload to Google Drive (if connected)
-  // We pass the buffer and mime type explicitly
-  // Pass the updated receipt object (merged with extracted data) for better naming
-  const updatedReceipt = { ...receipt, ...extractedData };
-  await ensureDriveFoldersAndUpload(updatedReceipt, buffer, fileData.type);
-
-  console.log(`[OCR] Finished processing ${receiptId}`);
 }
 
 // Alias for compatibility with existing routes
