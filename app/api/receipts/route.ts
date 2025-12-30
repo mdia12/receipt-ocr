@@ -1,0 +1,38 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
+
+export async function GET() {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.log("Auth check failed:", authError?.message || "No user found");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    console.log(`Fetching receipts for user: ${user.id}`);
+
+    const { data: receipts, error } = await supabase
+      .from("receipts")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Supabase receipts fetch error:", error);
+      throw error;
+    }
+
+    console.log(`Fetched ${receipts?.length || 0} receipts for user ${user.id}`);
+
+    // Map to frontend expected format if necessary, or return as is
+    // Frontend expects: id, date, merchant, category, amount, currency, status, file_url, etc.
+    // Assuming the DB columns match these names or close enough.
+    
+    return NextResponse.json({ receipts });
+  } catch (error) {
+    console.error("Receipts fetch error:", error);
+    return NextResponse.json({ error: "Failed to fetch receipts" }, { status: 500 });
+  }
+}
