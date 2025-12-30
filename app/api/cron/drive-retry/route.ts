@@ -4,9 +4,11 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic'; // Ensure this runs dynamically
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabaseAdmin = (supabaseUrl && supabaseServiceKey)
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null as any;
 
 export const maxDuration = 60; // Allow longer timeout for cron jobs
 
@@ -74,7 +76,7 @@ export async function POST(request: Request) {
     // 3. Process with Chunking (Simple Concurrency)
     for (let i = 0; i < receipts.length; i += CONCURRENCY_LIMIT) {
         const chunk = receipts.slice(i, i + CONCURRENCY_LIMIT);
-        const chunkPromises = chunk.map(r => processReceipt(r));
+        const chunkPromises = chunk.map((r: any) => processReceipt(r));
         const chunkResults = await Promise.all(chunkPromises);
         results.push(...chunkResults);
     }
