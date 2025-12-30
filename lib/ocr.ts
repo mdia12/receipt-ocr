@@ -139,6 +139,10 @@ export async function processReceipt(receiptId: string) {
 
   if (downloadError || !fileData) {
     console.error('[OCR] Failed to download file from storage', downloadError);
+    await supabaseAdmin.from('receipts').update({ 
+        status: 'failed', 
+        description: `Download failed: ${downloadError?.message || 'Unknown error'}` 
+    }).eq('id', receiptId);
     return;
   }
 
